@@ -234,10 +234,7 @@ body::after {
 /* ── Arabic font ──────────────────────────────────────────── */
 .font-arabic { font-family: 'Amiri', serif; }
 /* Correction lisibilité thème clair doré */
-main h1,
-main p,
-main span,
-main div {
+main h1 {
   color: var(--text-1);
 }
 
@@ -245,10 +242,8 @@ main p {
   color: var(--text-2);
 }
 
-main h1,
-main .font-bold,
-main .font-semibold {
-  color: var(--text-1) !important;
+main h1 {
+  color: var(--text-1);
 }
 
 /* Navigation par défaut blanche */
@@ -285,7 +280,7 @@ header a:hover span {
 
 .glass .font-bold,
 .glass .font-semibold {
-  color: var(--text-1) !important;
+  color: inherit;
 }
 /* Logo header */
 header p:first-of-type {

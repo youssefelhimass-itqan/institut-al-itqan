@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -31,7 +32,7 @@ const INSCRIPTION_URL = 'https://forms.gle/22KxDezaptLUqKPE7'
 
 const CLASSES_MENU = [
   { id: 'coran',     label: 'Coran',    full: 'Classes Coran',    sub: 'Enfants & Adultes' },
-  { id: 'al-itqan', label: 'Al-Itqan', full: 'Classes Al-Itqan', sub: 'Enfants'           },
+  { id: 'al-itqan', label: 'Arabe & Religion', full: 'Classe Arabe et Religion', sub: 'Enfants' },
   { id: 'arabe',    label: 'Arabe',    full: 'Classes Arabe',    sub: 'Adultes'           },
 ]
 
@@ -169,20 +170,13 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
           <div className="w-px h-6 shrink-0" style={{ background: 'rgba(255,255,255,0.15)' }} />
 
           <nav className="flex items-center gap-0.5" ref={menuRef}>
-            {([
-              { id: 'annonces',    label: 'Annonces'    },
-              { id: 'calendrier',  label: 'Calendrier'  },
-              { id: 'reglement',   label: 'Règlement'   },
-              { id: 'inscription', label: 'Inscription' },
-            ] as const).map(item => (
-              <button
-                key={item.id}
-                onClick={() => goTo(item.id)}
-                className={`px-4 py-2 rounded-xl text-[13.5px] font-medium transition-all duration-200 ${tab === item.id ? 'nav-tab-active' : ''}`}
-                style={{ color: tab === item.id ? '#6B4810' : 'rgba(245,231,211,0.65)' }}>
-                {item.label}
-              </button>
-            ))}
+            {/* Annonces */}
+            <button
+              onClick={() => goTo('annonces')}
+              className={`px-4 py-2 rounded-xl text-[13.5px] font-medium transition-all duration-200 ${tab === 'annonces' ? 'nav-tab-active' : ''}`}
+              style={{ color: tab === 'annonces' ? '#6B4810' : 'rgba(245,231,211,0.65)' }}>
+              Annonces
+            </button>
 
             {/* Dropdown Classes */}
             <div className="relative">
@@ -218,6 +212,27 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
                 </div>
               )}
             </div>
+
+            {/* S'inscrire */}
+            <Link
+              href="/inscription"
+              className="px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-all duration-200"
+              style={{ background: 'rgba(139,96,32,0.14)', color: 'var(--gold)' }}>
+              S'inscrire
+            </Link>
+
+            {/* Calendrier, Inviter un proche, Règlement */}
+            {([
+              { id: 'calendrier',  label: 'Calendrier'        },
+              { id: 'inscription', label: "Inviter un proche" },
+              { id: 'reglement',   label: 'Règlement'         },
+            ] as const).map(item => (
+              <button key={item.id} onClick={() => goTo(item.id)}
+                className={`px-4 py-2 rounded-xl text-[13.5px] font-medium transition-all duration-200 ${tab === item.id ? 'nav-tab-active' : ''}`}
+                style={{ color: tab === item.id ? '#6B4810' : 'rgba(245,231,211,0.65)' }}>
+                {item.label}
+              </button>
+            ))}
           </nav>
 
           <div className="flex-1" />
@@ -269,11 +284,11 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
           <div className="overflow-x-auto hide-scrollbar" style={{ borderTop: '1px solid rgba(255,255,255,0.10)' }}>
             <div className="flex items-center px-4 pb-3 pt-2 gap-1.5 min-w-max">
               {[
-                { id: 'annonces',    label: 'Annonces'    },
-                { id: 'calendrier',  label: 'Calendrier'  },
-                { id: 'reglement',   label: 'Règlement'   },
-                { id: 'inscription', label: 'Inscription' },
-                { id: 'classes',     label: 'Classes'     },
+                { id: 'annonces',    label: 'Annonces'          },
+                { id: 'classes',     label: 'Classes'           },
+                { id: 'calendrier',  label: 'Calendrier'         },
+                { id: 'inscription', label: "Inviter un proche"  },
+                { id: 'reglement',   label: 'Règlement'          },
               ].map(item => (
                 <button
                   key={item.id}
@@ -283,6 +298,12 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
                   {item.label}
                 </button>
               ))}
+              <Link
+                href="/inscription"
+                className="px-4 py-2 rounded-xl text-[13px] font-semibold whitespace-nowrap transition-all duration-200 flex items-center gap-1.5"
+                style={{ background: 'rgba(139,96,32,0.18)', color: 'var(--gold)' }}>
+                S'inscrire
+              </Link>
             </div>
           </div>
         </div>
@@ -476,9 +497,9 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
           <div className="animate-fade-up">
             <div className="mb-8">
               <h1 className="text-[28px] font-bold tracking-tight" style={{ color: 'var(--text-1)' }}>
-                Inscription
+                Inviter un proche
               </h1>
-              <p className="text-sm mt-1" style={{ color: 'var(--text-3)' }}>Année 2026-2027 · Places limitées</p>
+              <p className="text-sm mt-1" style={{ color: 'var(--text-3)' }}>Partagez le lien d'inscription à une personne intéressée</p>
             </div>
 
             <div className="glass rounded-2xl overflow-hidden animate-fade-up delay-1">
