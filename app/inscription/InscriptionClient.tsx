@@ -138,6 +138,8 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
   const [formule,  setFormule]  = useState<string | null>(null)
   const [nbEleves, setNbEleves] = useState(1)
   const [mode,     setMode]     = useState<'comptant' | 'fois4'>('comptant')
+  const [paying,   setPaying]   = useState(false)
+  const [payError, setPayError] = useState('')
   const [step,     setStep]     = useState<1 | 2 | 3>(1)
 
   const totalAnnuel  = calcTotal(nbEleves)
@@ -735,12 +737,26 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
             <div className="space-y-3 pt-2">
               <button disabled={!canPay}
                 className="btn-primary w-full py-4 rounded-2xl text-base font-bold flex items-center justify-center gap-3 disabled:opacity-40"
-                onClick={() => {
-                  const lien = formule ? STRIPE_LINKS[formule]?.[nbEleves]?.[mode] : null
-                  if (lien) {
-                    window.location.href = lien
-                  } else {
-                    alert('Lien de paiement introuvable. Veuillez contacter l\'administration.')
+                onClick={async () => {
+                  if (!formule || paying) return
+                  setPaying(true)
+                  setPayError('')
+                  try {
+                    const res  = await fetch('/api/checkout', {
+                      method:  'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body:    JSON.stringify({ formule, nbEleves, mode }),
+                    })
+                    const data = await res.json()
+                    if (!res.ok || !data.url) {
+                      setPayError(data.error || 'Erreur lors de la création du paiement.')
+                      setPaying(false)
+                      return
+                    }
+                    window.location.href = data.url
+                  } catch {
+                    setPayError('Erreur réseau. Vérifiez votre connexion et réessayez.')
+                    setPaying(false)
                   }
                 }}>
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
