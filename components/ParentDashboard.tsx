@@ -170,15 +170,30 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
           <div className="w-px h-6 shrink-0" style={{ background: 'rgba(255,255,255,0.15)' }} />
 
           <nav className="flex items-center gap-0.5" ref={menuRef}>
-            {/* Annonces */}
-            <button
-              onClick={() => goTo('annonces')}
-              className={`px-4 py-2 rounded-xl text-[13.5px] font-medium transition-all duration-200 ${tab === 'annonces' ? 'nav-tab-active' : ''}`}
-              style={{ color: tab === 'annonces' ? '#6B4810' : 'rgba(245,231,211,0.65)' }}>
-              Annonces
-            </button>
 
-            {/* Dropdown Classes */}
+            {/* ── Onglets principaux ── */}
+            {([
+              { id: 'annonces',    label: 'Annonces'          },
+              { id: 'calendrier',  label: 'Calendrier'        },
+              { id: 'reglement',   label: 'Règlement'         },
+              { id: 'invitation',  label: 'Inviter un proche' },
+            ] as const).map(item => (
+              <button key={item.id} onClick={() => goTo(item.id)}
+                className={`px-4 py-2 rounded-xl text-[13.5px] font-medium transition-all duration-200 ${tab === item.id ? 'nav-tab-active' : ''}`}
+                style={{ color: tab === item.id ? '#6B4810' : 'rgba(245,231,211,0.65)' }}>
+                {item.label}
+              </button>
+            ))}
+
+            {/* ── S'inscrire — lien vers page dédiée ── */}
+            <Link
+              href="/inscription"
+              className="px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-all duration-200"
+              style={{ background: 'rgba(139,96,32,0.14)', color: 'var(--gold)' }}>
+              S'inscrire
+            </Link>
+
+            {/* ── Dropdown Classes ── */}
             <div className="relative">
               <button
                 onClick={() => setMenuOpen(v => !v)}
@@ -212,27 +227,6 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
                 </div>
               )}
             </div>
-
-            {/* S'inscrire */}
-            <Link
-              href="/inscription"
-              className="px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-all duration-200"
-              style={{ background: 'rgba(139,96,32,0.14)', color: 'var(--gold)' }}>
-              S'inscrire
-            </Link>
-
-            {/* Calendrier, Inviter un proche, Règlement */}
-            {([
-              { id: 'calendrier',  label: 'Calendrier'        },
-              { id: 'inscription', label: "Inviter un proche" },
-              { id: 'reglement',   label: 'Règlement'         },
-            ] as const).map(item => (
-              <button key={item.id} onClick={() => goTo(item.id)}
-                className={`px-4 py-2 rounded-xl text-[13.5px] font-medium transition-all duration-200 ${tab === item.id ? 'nav-tab-active' : ''}`}
-                style={{ color: tab === item.id ? '#6B4810' : 'rgba(245,231,211,0.65)' }}>
-                {item.label}
-              </button>
-            ))}
           </nav>
 
           <div className="flex-1" />
@@ -284,11 +278,11 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
           <div className="overflow-x-auto hide-scrollbar" style={{ borderTop: '1px solid rgba(255,255,255,0.10)' }}>
             <div className="flex items-center px-4 pb-3 pt-2 gap-1.5 min-w-max">
               {[
-                { id: 'annonces',    label: 'Annonces'          },
-                { id: 'classes',     label: 'Classes'           },
-                { id: 'calendrier',  label: 'Calendrier'         },
-                { id: 'inscription', label: "Inviter un proche"  },
-                { id: 'reglement',   label: 'Règlement'          },
+                { id: 'annonces',   label: 'Annonces'          },
+                { id: 'classes',    label: 'Classes'           },
+                { id: 'calendrier', label: 'Calendrier'        },
+                { id: 'reglement',  label: 'Règlement'         },
+                { id: 'invitation', label: 'Inviter un proche' },
               ].map(item => (
                 <button
                   key={item.id}
@@ -493,7 +487,7 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
         )}
 
         {/* ── INSCRIPTION ─────────────────────────────────────────────────── */}
-        {tab === 'inscription' && (
+        {tab === 'invitation' && (
           <div className="animate-fade-up">
             <div className="mb-8">
               <h1 className="text-[28px] font-bold tracking-tight" style={{ color: 'var(--text-1)' }}>
