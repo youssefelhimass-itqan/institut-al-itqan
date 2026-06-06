@@ -17,34 +17,31 @@ export default function ResetPasswordPage() {
   const [tokenError, setTokenError] = useState(false)
 
   // ── Supabase envoie les tokens dans le fragment URL (#access_token=...&type=recovery)
-  // On laisse le SDK les lire via onAuthStateChange, qui émet PASSWORD_RECOVERY
+  // Le SDK les lit automatiquement et émet PASSWORD_RECOVERY (parfois précédé de SIGNED_IN).
+  // On ne redirige JAMAIS ici — on attend uniquement PASSWORD_RECOVERY pour activer le formulaire.
   useEffect(() => {
+    let recoveryReceived = false
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
-        // La session de récupération est active — on peut maintenant changer le mot de passe
+        recoveryReceived = true
         setTokenReady(true)
+        setTokenError(false)
       }
-      if (event === 'SIGNED_IN' && !tokenReady) {
-        // Connexion normale sans flux recovery — rediriger
-        router.replace('/parent')
-      }
+      // SIGNED_IN peut arriver avant ou après PASSWORD_RECOVERY dans un flux reset —
+      // on l'ignore complètement sur cette page pour ne jamais interrompre le formulaire.
     })
 
-    // Timeout : si après 5s on n'a pas reçu PASSWORD_RECOVERY, le lien est invalide/expiré
+    // Timeout : si PASSWORD_RECOVERY n'arrive pas dans les 6s, le lien est invalide/expiré
     const timeout = setTimeout(() => {
-      setTokenError(true)
-    }, 5000)
+      if (!recoveryReceived) setTokenError(true)
+    }, 6000)
 
     return () => {
       subscription.unsubscribe()
       clearTimeout(timeout)
     }
   }, []) // eslint-disable-line
-
-  // Une fois PASSWORD_RECOVERY reçu, annuler le timeout d'erreur
-  useEffect(() => {
-    if (tokenReady) setTokenError(false)
-  }, [tokenReady])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
