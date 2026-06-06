@@ -51,7 +51,7 @@ export default function LoginPage() {
     <div
       className="min-h-screen flex items-center justify-center p-5"
       style={{
-        background: '#E9D8C3',
+        background: 'linear-gradient(145deg, #2D0810 0%, #5C1527 55%, #7A2038 100%)',
       }}
     >
       {/* Halo décoratif */}
@@ -176,23 +176,21 @@ export default function LoginPage() {
 
               {/* Mot de passe */}
               <div className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                    Mot de passe
-                  </label>
-                  <button type="button"
-                    onClick={() => { setResetMode(true); setError('') }}
-                    className="text-xs font-medium transition-colors hover:opacity-80"
-                    style={{ color: '#7a2038' }}>
-                    Oublié ?
-                  </button>
-                </div>
+                <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                  Mot de passe
+                </label>
                 <input
                   type="password" required value={password} disabled={loading}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full rounded-xl border border-gray-200 bg-[#FAFAF8] px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-[#7a2038] focus:bg-white focus:ring-2 focus:ring-[#7a2038]/10"
                 />
+                <button type="button"
+                  onClick={() => { setResetMode(true); setError('') }}
+                  className="text-xs font-medium text-left transition-colors hover:opacity-70 mt-0.5"
+                  style={{ color: '#7a2038' }}>
+                  Mot de passe oublié ?
+                </button>
               </div>
 
               {/* Bouton — centré, pas pleine largeur */}
@@ -201,7 +199,8 @@ export default function LoginPage() {
                   type="submit" disabled={loading}
                   className="px-12 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60 flex items-center gap-2"
                   style={{
-                    background: '#4A2E22',
+                    background: 'linear-gradient(135deg, #7a2038 0%, #5C1527 100%)',
+                    boxShadow: '0 2px 14px rgba(92,21,39,0.35)',
                   }}
                   onMouseEnter={e => {
                     (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 20px rgba(92,21,39,0.5)'
