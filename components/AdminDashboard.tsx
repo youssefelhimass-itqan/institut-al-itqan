@@ -18,7 +18,7 @@ type Props = {
 }
 
 const CAT_LABEL: Record<string, string> = {
-  coran: 'Coran (Enfants & Adultes)', 'al-itqan': 'Al-Itqan (Enfants)', arabe: 'Arabe (Adultes)',
+  coran: 'Coran (Enfants & Adultes)', 'al-itqan': 'Arabe et Religion (Enfants)', arabe: 'Arabe (Adultes)',
 }
 
 // ─── Composant ─────────────────────────────────────────────────────────────
@@ -147,7 +147,7 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
       {/* Toast premium */}
       {toast && (
         <div className="fixed top-5 right-5 z-50 px-5 py-3.5 rounded-2xl text-sm font-semibold animate-fade-up"
-          style={{ background: 'var(--bg-overlay)', border: '1px solid var(--border)', color: 'var(--text-1)', boxShadow: '0 20px 60px rgba(0,0,0,0.6)' }}>
+          style={{ background: '#FFFFFF', border: '1px solid rgba(139,96,32,0.20)', color: 'var(--text-1)', boxShadow: '0 12px 40px rgba(44,26,6,0.18)' }}>
           {toast}
         </div>
       )}
@@ -155,14 +155,14 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
       {/* ══════════ HEADER ══════════ */}
       <header className="sticky top-0 z-40"
         style={{
-          background: 'rgba(16,5,9,0.8)',
-          backdropFilter: 'blur(32px) saturate(1.6)',
-          WebkitBackdropFilter: 'blur(32px) saturate(1.6)',
-          borderBottom: '1px solid var(--border)',
+          background: 'rgba(90,12,28,0.96)',
+          backdropFilter: 'blur(20px) saturate(1.3)',
+          WebkitBackdropFilter: 'blur(20px) saturate(1.3)',
+          borderBottom: '1px solid rgba(139,96,32,0.25)',
         }}>
         <div className="flex items-center h-[60px] px-8">
           <div className="shrink-0">
-            <p className="text-[15px] font-semibold leading-none tracking-tight" style={{ color: '#F5E7D3' }}>
+            <p className="text-[15px] font-semibold leading-none tracking-tight" style={{ color: 'var(--text-1)' }}>
               Institut Al-Itqan
             </p>
             <p className="text-[11px] font-medium leading-none mt-[5px] tracking-widest uppercase" style={{ color: 'var(--gold)' }}>
@@ -180,18 +180,18 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
         </div>
 
         {/* Onglets */}
-        <div className="overflow-x-auto" style={{ borderTop: '1px solid var(--border-soft)' }}>
+        <div className="overflow-x-auto" style={{ borderTop: '1px solid rgba(139,96,32,0.18)' }}>
           <div className="flex px-5">
             {TABS.map(item => (
               <button key={item.id} onClick={() => setTab(item.id)}
                 className="flex items-center gap-2 px-5 py-3.5 text-sm font-semibold whitespace-nowrap transition-all duration-200 relative"
-                style={{ color: tab === item.id ? 'var(--accent)' : 'var(--text-2)', background: 'transparent' }}>
+                style={{ color: tab === item.id ? '#8B1A2F' : 'var(--text-2)', background: 'transparent' }}>
                 <span>{item.icon}</span>
                 <span>{item.label}</span>
                 {/* Underline animé */}
                 {tab === item.id && (
                   <div className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full"
-                    style={{ background: 'var(--accent)' }} />
+                    style={{ background: '#8B6020' }} />
                 )}
               </button>
             ))}
@@ -207,7 +207,7 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
           <>
             {/* Formulaire */}
             <div className="glass rounded-2xl p-6 animate-fade-up">
-              <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: 'var(--accent)' }}>
+              <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: 'var(--gold)' }}>
                 Nouvelle annonce
               </p>
               <div className="space-y-3">
@@ -241,7 +241,7 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
               <div className="space-y-2">
                 {annonces.map(a => (
                   <div key={a.id} className="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-150"
-                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-soft)' }}>
+                    style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(139,96,32,0.12)' }}>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm truncate" style={{ color: 'var(--text-1)' }}>{a.titre}</p>
                       <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-3)' }}>{a.contenu}</p>
@@ -254,7 +254,7 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
                     </span>
                     <button onClick={() => delAnnonce(a.id)}
                       className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all shrink-0"
-                      style={{ background: 'rgba(248,113,113,0.1)', color: '#F87171' }}>
+                      style={{ background: 'rgba(139,96,32,0.12)', color: '#8B6020' }}>
                       Suppr.
                     </button>
                   </div>
@@ -268,7 +268,7 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
         {tab === 'horaires' && (
           <>
             <div className="glass rounded-2xl p-6 animate-fade-up">
-              <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: 'var(--accent)' }}>
+              <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: 'var(--gold)' }}>
                 Ajouter un cours
               </p>
               <div className="grid grid-cols-2 gap-3">
@@ -297,14 +297,14 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
               <div className="space-y-2">
                 {horaires.map(h => (
                   <div key={h.id} className="flex items-center gap-4 px-4 py-3.5 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-soft)' }}>
+                    style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(139,96,32,0.12)' }}>
                     <div className="flex-1">
                       <p className="font-semibold text-sm" style={{ color: 'var(--text-1)' }}>{h.cours}</p>
                       <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>{h.jour} · {h.horaire} · {h.niveau}</p>
                     </div>
                     <button onClick={() => delHoraire(h.id)}
                       className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all shrink-0"
-                      style={{ background: 'rgba(248,113,113,0.1)', color: '#F87171' }}>
+                      style={{ background: 'rgba(139,96,32,0.12)', color: '#8B6020' }}>
                       Suppr.
                     </button>
                   </div>
@@ -318,7 +318,7 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
         {tab === 'documents' && (
           <>
             <div className="glass rounded-2xl p-6 animate-fade-up">
-              <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--accent)' }}>
+              <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--gold)' }}>
                 Ajouter un document PDF
               </p>
               <p className="text-xs mb-5" style={{ color: 'var(--text-3)' }}>Documents généraux — calendrier, règlement, etc.</p>
@@ -350,16 +350,16 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
               <div className="space-y-2">
                 {documents.map(d => (
                   <div key={d.id} className="flex items-center gap-4 px-4 py-3.5 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-soft)' }}>
+                    style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(139,96,32,0.12)' }}>
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold shrink-0"
-                      style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>PDF</div>
+                      style={{ background: 'var(--accent-soft)', color: 'var(--gold)' }}>PDF</div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm truncate" style={{ color: 'var(--text-1)' }}>{d.nom}</p>
                       <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>{d.taille}</p>
                     </div>
                     <button onClick={() => delDoc(d)}
                       className="text-xs font-semibold px-3 py-1.5 rounded-lg shrink-0"
-                      style={{ background: 'rgba(248,113,113,0.1)', color: '#F87171' }}>
+                      style={{ background: 'rgba(139,96,32,0.12)', color: '#8B6020' }}>
                       Suppr.
                     </button>
                   </div>
@@ -373,7 +373,7 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
         {tab === 'groupes' && (
           <>
             <div className="glass rounded-2xl p-6 animate-fade-up">
-              <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: 'var(--accent)' }}>
+              <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: 'var(--gold)' }}>
                 Ajouter un document à un groupe
               </p>
               <div className="space-y-4">
@@ -435,7 +435,7 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
                 <div className="space-y-2">
                   {(groupeDocs[selGroupe] ?? []).map(gd => (
                     <div key={gd.id} className="flex items-center gap-4 px-4 py-3.5 rounded-xl"
-                      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-soft)' }}>
+                      style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(139,96,32,0.12)' }}>
                       <span className="text-xl shrink-0">
                         {gd.type_doc === 'devoir' ? '📝' : gd.type_doc === 'cours' ? '📖' : gd.type_doc === 'rappel' ? '🔔' : '📄'}
                       </span>
@@ -445,7 +445,7 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
                       </div>
                       <button onClick={() => delGDoc(gd)}
                         className="text-xs font-semibold px-3 py-1.5 rounded-lg shrink-0"
-                        style={{ background: 'rgba(248,113,113,0.1)', color: '#F87171' }}>
+                        style={{ background: 'rgba(139,96,32,0.12)', color: '#8B6020' }}>
                         Suppr.
                       </button>
                     </div>
@@ -463,7 +463,7 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
                 if (!gs.length) return null
                 return (
                   <div key={cat} className="mb-5 last:mb-0">
-                    <p className="text-[11px] font-bold uppercase tracking-widest mb-2.5" style={{ color: 'var(--accent)' }}>
+                    <p className="text-[11px] font-bold uppercase tracking-widest mb-2.5" style={{ color: 'var(--gold)' }}>
                       {CAT_LABEL[cat]}
                     </p>
                     <div className="space-y-1.5">
@@ -475,7 +475,7 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
                           </p>
                           <button onClick={() => handleSelectGroupe(g.id)}
                             className="text-xs font-bold transition-colors"
-                            style={{ color: 'var(--accent)' }}>
+                            style={{ color: 'var(--gold)' }}>
                             Gérer →
                           </button>
                         </div>

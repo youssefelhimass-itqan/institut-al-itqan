@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import Navbar from '@/components/Navbar'
 
 // ─── Tarifs ────────────────────────────────────────────────────────────────
 // Tarif annuel de base par élève : 276 €
@@ -75,7 +76,7 @@ const FORMULES = [
 
 const CLASSES_MENU = [
   { id: 'coran',     full: 'Classes Coran',            sub: 'Enfants & Adultes' },
-  { id: 'al-itqan', full: 'Classe Arabe et Religion',  sub: 'Enfants'           },
+  { id: 'al-itqan', full: 'Classes Arabe et Religion',  sub: 'Enfants'           },
   { id: 'arabe',    full: 'Classes Arabe',             sub: 'Adultes'           },
 ]
 
@@ -119,21 +120,6 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
   const supabase = createClient()
 
   // ── État navbar ────────────────────────────────────────────────────────
-  const [menuOpen, setMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const h = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
-    }
-    document.addEventListener('mousedown', h)
-    return () => document.removeEventListener('mousedown', h)
-  }, [])
-
-  const logout = async () => {
-    await supabase.auth.signOut(); router.push('/'); router.refresh()
-  }
-
   // ── État formulaire ────────────────────────────────────────────────────
   const [formule,  setFormule]  = useState<string | null>(null)
   const [nbEleves, setNbEleves] = useState(1)
@@ -161,147 +147,13 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
     <div className="min-h-screen">
 
       {/* ══════════ HEADER — identique à ParentDashboard ══════════ */}
-      <header
-        className="sticky top-0 z-50"
-        style={{
-          background: 'rgba(44,26,6,0.92)',
-          backdropFilter: 'blur(20px) saturate(1.3)',
-          WebkitBackdropFilter: 'blur(20px) saturate(1.3)',
-          borderBottom: '1px solid rgba(44,26,6,0.18)',
-        }}>
+      {/* ══ HEADER ════════════════════════════════════════════════════════ */}
+      <Navbar
+        userEmail={userEmail}
+        activeTab="sinscrire"
+      />
 
-        {/* Desktop */}
-        <div className="hidden md:flex items-center h-[60px] px-8 gap-6">
-
-          {/* Identité */}
-          <div className="shrink-0">
-            <p className="text-[15px] font-semibold leading-none tracking-tight" style={{ color: '#F5E7D3' }}>
-              Institut Al-Itqan
-            </p>
-            <p className="text-[11px] font-medium leading-none mt-[5px] tracking-widest uppercase" style={{ color: 'var(--gold)' }}>
-              Espace parents
-            </p>
-          </div>
-
-          <div className="w-px h-6 shrink-0" style={{ background: 'rgba(255,255,255,0.15)' }} />
-
-          {/* Navigation */}
-          <nav className="flex items-center gap-0.5">
-            {([
-              { id: 'annonces',    label: 'Annonces',    href: '/parent' },
-              { id: 'calendrier',  label: 'Calendrier',  href: '/parent' },
-              { id: 'reglement',   label: 'Règlement',   href: '/parent' },
-              { id: 'inscription', label: 'Parle de nous', href: '/parent' },
-            ] as const).map(item => (
-              <Link key={item.id} href={item.href}
-                className="px-4 py-2 rounded-xl text-[13.5px] font-medium transition-all duration-200"
-                style={navItemStyle(false)}>
-                {item.label}
-              </Link>
-            ))}
-
-            {/* S'inscrire — actif */}
-            <Link href="/inscription"
-              className="px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-all duration-200"
-              style={{ background: 'rgba(139,96,32,0.18)', color: 'var(--gold)' }}>
-              S'inscrire
-            </Link>
-
-            {/* Dropdown Classes */}
-            <div className="relative" ref={menuRef}>
-              <button onClick={() => setMenuOpen(v => !v)}
-                className="px-4 py-2 rounded-xl text-[13.5px] font-medium transition-all duration-200 flex items-center gap-1.5"
-                style={navItemStyle(false)}>
-                Classes
-                <svg className="w-3.5 h-3.5 transition-transform duration-200"
-                  style={{ transform: menuOpen ? 'rotate(180deg)' : 'none' }}
-                  fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              {menuOpen && (
-                <div className="absolute top-full left-0 mt-2 w-60 rounded-2xl overflow-hidden z-50 animate-fade-up"
-                  style={{ background: '#EDE0C4', border: '1px solid rgba(139,96,32,0.18)', boxShadow: '0 16px 48px rgba(44,26,6,0.20)' }}>
-                  {CLASSES_MENU.map(cl => (
-                    <Link key={cl.id} href="/parent"
-                      className="block w-full px-5 py-4 text-left transition-all duration-150"
-                      style={{ borderBottom: '1px solid rgba(139,96,32,0.12)' }}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(139,96,32,0.08)'}
-                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
-                      <p className="text-sm font-semibold" style={{ color: '#3A2110' }}>{cl.full}</p>
-                      <p className="text-xs mt-0.5" style={{ color: '#6B4A2B' }}>{cl.sub}</p>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          </nav>
-
-          <div className="flex-1" />
-
-          {/* Avatar + déconnexion */}
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold uppercase text-white"
-                style={{ background: 'linear-gradient(135deg, #8B6020 0%, #6B4810 100%)' }}>
-                {userEmail[0]}
-              </div>
-              <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2"
-                style={{ background: '#34D399', borderColor: 'var(--bg-base)' }} />
-            </div>
-            <button onClick={logout}
-              className="text-[13px] font-medium transition-all duration-200 px-3 py-1.5 rounded-lg"
-              style={{ color: 'rgba(245,231,211,0.65)' }}
-              onMouseEnter={e => { const b = e.currentTarget as HTMLElement; b.style.color = '#F5E7D3'; b.style.background = 'rgba(255,255,255,0.10)' }}
-              onMouseLeave={e => { const b = e.currentTarget as HTMLElement; b.style.color = 'rgba(245,231,211,0.65)'; b.style.background = 'transparent' }}>
-              Déconnexion
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile */}
-        <div className="md:hidden">
-          <div className="flex items-center justify-between px-5 h-[56px]">
-            <div>
-              <p className="text-[14px] font-semibold leading-none" style={{ color: '#F5E7D3' }}>Institut Al-Itqan</p>
-              <p className="text-[10px] font-medium leading-none mt-1 tracking-widest uppercase" style={{ color: 'var(--gold)' }}>Espace parents</p>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold uppercase text-white"
-                style={{ background: 'linear-gradient(135deg, #8B6020 0%, #6B4810 100%)' }}>
-                {userEmail[0]}
-              </div>
-              <button onClick={logout} className="text-xs font-medium" style={{ color: 'rgba(245,231,211,0.55)' }}>Déco.</button>
-            </div>
-          </div>
-          <div className="overflow-x-auto hide-scrollbar" style={{ borderTop: '1px solid rgba(255,255,255,0.10)' }}>
-            <div className="flex items-center px-4 pb-3 pt-2 gap-1.5 min-w-max">
-              {[
-                { label: 'Annonces',    href: '/parent' },
-                { label: 'Calendrier',  href: '/parent' },
-                { label: 'Règlement',   href: '/parent' },
-                { label: 'Parle de nous', href: '/parent' },
-                { label: 'Classes',     href: '/parent' },
-              ].map(item => (
-                <Link key={item.label} href={item.href}
-                  className="px-4 py-2 rounded-xl text-[13px] font-semibold whitespace-nowrap transition-all duration-200"
-                  style={navItemStyle(false)}>
-                  {item.label}
-                </Link>
-              ))}
-              <Link href="/inscription"
-                className="px-4 py-2 rounded-xl text-[13px] font-semibold whitespace-nowrap"
-                style={{ background: 'rgba(139,96,32,0.18)', color: 'var(--gold)' }}>
-                S'inscrire
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* ══════════ CONTENU ══════════ */}
-      <main className="max-w-3xl mx-auto px-5 py-10">
+            <main className="max-w-3xl mx-auto px-5 py-10">
 
         <div className="mb-10 animate-fade-up">
           <h1 className="text-[32px] font-bold tracking-tight" style={{ color: 'var(--text-1)' }}>

@@ -1,10 +1,5 @@
-/**
- * app/parent/page.tsx — Server Component
- * Vérifie la session côté serveur,
- * puis passe les données initiales au Client Component.
- */
-
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import ParentDashboard from '@/components/ParentDashboard'
 
@@ -25,11 +20,14 @@ export default async function ParentPage() {
   ])
 
   return (
-    <ParentDashboard
-      user={{ email: user.email ?? '' }}
-      annonces={annonces ?? []}
-      horaires={horaires ?? []}
-      documents={documents ?? []}
-    />
+    // Suspense requis par useSearchParams dans ParentDashboard
+    <Suspense>
+      <ParentDashboard
+        user={{ email: user.email ?? '' }}
+        annonces={annonces ?? []}
+        horaires={horaires ?? []}
+        documents={documents ?? []}
+      />
+    </Suspense>
   )
 }
