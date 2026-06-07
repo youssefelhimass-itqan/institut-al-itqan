@@ -41,6 +41,7 @@ const PRIX_FOIS4: Record<string, Record<number, string>> = {
 // injecte les variables d'environnement → clé vide → "Expired API Key"
 function getStripe(): Stripe {
   const key = process.env.STRIPE_SECRET_KEY
+  console.log('[checkout] key prefix:', key?.slice(0, 20))
 
   // Logs de diagnostic — jamais la clé complète
   console.log('[checkout] STRIPE_SECRET_KEY présente :', !!key)
