@@ -8,39 +8,42 @@ export default function ResetPasswordPage() {
   const router   = useRouter()
   const supabase = createClient()
 
-  const [password,  setPassword]  = useState('')
-  const [confirm,   setConfirm]   = useState('')
-  const [loading,   setLoading]   = useState(false)
-  const [error,     setError]     = useState('')
-  const [success,   setSuccess]   = useState(false)
+  const [password,   setPassword]   = useState('')
+  const [confirm,    setConfirm]    = useState('')
+  const [loading,    setLoading]    = useState(false)
+  const [error,      setError]      = useState('')
+  const [success,    setSuccess]    = useState(false)
   const [tokenReady, setTokenReady] = useState(false)
   const [tokenError, setTokenError] = useState(false)
 
-  // ── Supabase envoie les tokens dans le fragment URL (#access_token=...&type=recovery)
-  // Le SDK les lit automatiquement et émet PASSWORD_RECOVERY (parfois précédé de SIGNED_IN).
-  // On ne redirige JAMAIS ici — on attend uniquement PASSWORD_RECOVERY pour activer le formulaire.
+  // ── Lire les tokens directement dans le hash de l'URL ────────────────────
+  // Supabase envoie : /reset-password#access_token=xxx&refresh_token=yyy&type=recovery
   useEffect(() => {
-    let recoveryReceived = false
+    const hash   = window.location.hash.slice(1)          // retire le "#"
+    const params = new URLSearchParams(hash)
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        recoveryReceived = true
-        setTokenReady(true)
-        setTokenError(false)
-      }
-      // SIGNED_IN peut arriver avant ou après PASSWORD_RECOVERY dans un flux reset —
-      // on l'ignore complètement sur cette page pour ne jamais interrompre le formulaire.
-    })
+    const accessToken  = params.get('access_token')
+    const refreshToken = params.get('refresh_token')
+    const type         = params.get('type')
 
-    // Timeout : si PASSWORD_RECOVERY n'arrive pas dans les 6s, le lien est invalide/expiré
-    const timeout = setTimeout(() => {
-      if (!recoveryReceived) setTokenError(true)
-    }, 6000)
-
-    return () => {
-      subscription.unsubscribe()
-      clearTimeout(timeout)
+    // Vérifier qu'on est bien dans un flux de récupération de mot de passe
+    if (type !== 'recovery' || !accessToken || !refreshToken) {
+      setTokenError(true)
+      return
     }
+
+    // Établir la session avec les tokens reçus
+    supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+      .then(({ error: err }) => {
+        if (err) {
+          console.error('[reset-password] setSession error:', err.message)
+          setTokenError(true)
+        } else {
+          // Nettoyer le hash de l'URL (sécurité : ne pas garder les tokens visibles)
+          window.history.replaceState(null, '', window.location.pathname)
+          setTokenReady(true)
+        }
+      })
   }, []) // eslint-disable-line
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,7 +66,6 @@ export default function ResetPasswordPage() {
         setError(err.message)
       } else {
         setSuccess(true)
-        // Redirection vers la page de connexion après 3 secondes
         setTimeout(() => router.replace('/'), 3000)
       }
     } catch {
@@ -98,10 +100,11 @@ export default function ResetPasswordPage() {
             style={{ color: '#9A7535', letterSpacing: '0.12em' }}>
             Réinitialisation
           </p>
-          <div className="w-8 h-px rounded-full mt-1" style={{ background: '#C4A05A', opacity: 0.5 }} />
+          <div className="w-8 h-px rounded-full mt-1"
+            style={{ background: '#C4A05A', opacity: 0.5 }} />
         </div>
 
-        {/* Zone formulaire */}
+        {/* Zone contenu */}
         <div className="bg-white px-10 py-8">
 
           {/* ── Succès ── */}
@@ -109,8 +112,8 @@ export default function ResetPasswordPage() {
             <div className="flex flex-col items-center gap-4 text-center">
               <div className="w-14 h-14 rounded-full flex items-center justify-center"
                 style={{ background: 'rgba(52,168,83,0.10)' }}>
-                <svg className="w-7 h-7" style={{ color: '#34A853' }} fill="none"
-                  viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-7 h-7" style={{ color: '#34A853' }}
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
                     d="M5 13l4 4L19 7" />
                 </svg>
@@ -125,11 +128,12 @@ export default function ResetPasswordPage() {
           )}
 
           {/* ── Lien invalide / expiré ── */}
-          {!success && tokenError && !tokenReady && (
+          {!success && tokenError && (
             <div className="flex flex-col items-center gap-4 text-center">
               <div className="w-14 h-14 rounded-full flex items-center justify-center"
                 style={{ background: 'rgba(220,38,38,0.08)' }}>
-                <svg className="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-7 h-7 text-red-500" fill="none"
+                  viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                 </svg>
@@ -149,9 +153,9 @@ export default function ResetPasswordPage() {
             </div>
           )}
 
-          {/* ── Chargement token ── */}
+          {/* ── Chargement (lecture hash en cours) ── */}
           {!success && !tokenError && !tokenReady && (
-            <div className="flex flex-col items-center gap-3 py-4">
+            <div className="flex flex-col items-center gap-3 py-6">
               <svg className="animate-spin h-7 w-7" style={{ color: '#7a2038' }}
                 fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10"

@@ -33,7 +33,7 @@ const INSCRIPTION_URL = 'https://forms.gle/22KxDezaptLUqKPE7'
 
 const CLASSES_MENU = [
   { id: 'coran',     label: 'Coran',    full: 'Classes Coran',    sub: 'Enfants & Adultes' },
-  { id: 'al-itqan', label: 'Arabe & Religion', full: 'Classes Arabe et Religion', sub: 'Enfants' },
+  { id: 'al-itqan', label: 'Arabe & Religion', full: 'Classe Arabe et Religion', sub: 'Enfants' },
   { id: 'arabe',    label: 'Arabe',    full: 'Classes Arabe',    sub: 'Adultes'           },
 ]
 
@@ -120,13 +120,61 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
     await fetchGroupeDocs(id)
   }
 
-  const handleDownload = async (path: string, bucket: string, id: string) => {
+  const handleDownload = async (path: string, bucket: string, id: string, nom?: string) => {
     setDownloading(id)
+    console.log(`[téléchargement] Début — nom: "${nom ?? ''}", bucket: "${bucket}", path: "${path}"`)
+
     try {
-      const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 60)
-      if (error || !data?.signedUrl) { alert('Impossible de générer le lien. Réessayez.'); return }
-      window.open(data.signedUrl, '_blank')
-    } finally { setDownloading(null) }
+      // ── Tentative 1 : chemin exact tel que stocké en DB ──────────────────
+      const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 300)
+
+      if (!error && data?.signedUrl) {
+        console.log(`[téléchargement] ✅ URL signée générée: ${data.signedUrl}`)
+        window.open(data.signedUrl, '_blank')
+        return
+      }
+
+      console.warn(`[téléchargement] ⚠️ Échec chemin exact — erreur: ${error?.message}`)
+
+      // ── Tentative 2 : URL publique directe (si bucket public) ────────────
+      const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(path)
+      if (publicUrl) {
+        console.log(`[téléchargement] 🔄 Tentative URL publique: ${publicUrl}`)
+        // Vérifier que l'URL répond avant d'ouvrir
+        const check = await fetch(publicUrl, { method: 'HEAD' }).catch(() => null)
+        if (check?.ok) {
+          console.log(`[téléchargement] ✅ URL publique accessible`)
+          window.open(publicUrl, '_blank')
+          return
+        }
+        console.warn(`[téléchargement] ⚠️ URL publique inaccessible (status: ${check?.status})`)
+      }
+
+      // ── Tentative 3 : nom de fichier seul (si le path en DB est un chemin relatif) ──
+      const nomFichier = path.includes('/') ? path.split('/').pop()! : null
+      if (nomFichier && nomFichier !== path) {
+        console.log(`[téléchargement] 🔄 Tentative nom seul: "${nomFichier}"`)
+        const { data: d2, error: e2 } = await supabase.storage.from(bucket).createSignedUrl(nomFichier, 300)
+        if (!e2 && d2?.signedUrl) {
+          console.log(`[téléchargement] ✅ URL signée (nom seul): ${d2.signedUrl}`)
+          window.open(d2.signedUrl, '_blank')
+          return
+        }
+        console.warn(`[téléchargement] ⚠️ Échec nom seul — erreur: ${e2?.message}`)
+      }
+
+      // ── Toutes les tentatives ont échoué ──────────────────────────────────
+      console.error(`[téléchargement] ❌ Fichier introuvable dans Storage`)
+      console.error(`  bucket : ${bucket}`)
+      console.error(`  path   : ${path}`)
+      alert(`Fichier introuvable.\n\nVérifiez que "${path}" existe bien dans le bucket "${bucket}" de votre espace Storage Supabase.`)
+
+    } catch (err) {
+      console.error('[téléchargement] Erreur inattendue :', err)
+      alert('Erreur inattendue lors du téléchargement. Consultez la console.')
+    } finally {
+      setDownloading(null)
+    }
   }
 
   const copyLink = async () => {
@@ -268,7 +316,7 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
                       <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>{doc.taille}</p>
                     </div>
                     <button
-                      onClick={() => handleDownload(doc.storage_path, 'documents', doc.id)}
+                      onClick={() => handleDownload(doc.storage_path, 'documents', doc.id, doc.nom)}
                       disabled={downloading === doc.id}
                       className="btn-primary text-xs px-4 py-2 rounded-xl disabled:opacity-40">
                       {downloading === doc.id ? '…' : '↓'}
@@ -328,7 +376,7 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
                       <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>{doc.taille}</p>
                     </div>
                     <button
-                      onClick={() => handleDownload(doc.storage_path, 'documents', doc.id)}
+                      onClick={() => handleDownload(doc.storage_path, 'documents', doc.id, doc.nom)}
                       disabled={downloading === doc.id}
                       className="btn-primary text-xs px-4 py-2 rounded-xl disabled:opacity-40">
                       {downloading === doc.id ? '…' : '↓'}
@@ -563,7 +611,7 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
                                   </p>
                                 </div>
                                 <button
-                                  onClick={() => handleDownload(gd.storage_path, 'groupe-docs', gd.id)}
+                                  onClick={() => handleDownload(gd.storage_path, 'groupe-docs', gd.id, gd.nom)}
                                   disabled={downloading === gd.id}
                                   className="btn-primary text-xs px-4 py-2 rounded-xl disabled:opacity-40"
                                   style={{ background: '#B89B6A', color: '#FFFFFF' }}>
