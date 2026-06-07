@@ -646,6 +646,11 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
                   </>
                 )}
               </button>
+              {payError && (
+                <p className="text-sm text-center font-semibold" style={{ color: '#DC2626' }}>
+                  {payError}
+                </p>
+              )}
               <p className="text-xs text-center" style={{ color: 'var(--text-3)' }}>
                 Paiement sécurisé — vous serez redirigé vers Stripe
               </p>
