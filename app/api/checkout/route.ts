@@ -56,7 +56,7 @@ function getStripe(): Stripe {
     throw new Error('STRIPE_SECRET_KEY manquante. Ajoutez-la dans Vercel > Project Settings > Environment Variables.')
   }
 
-  return new Stripe(key, { apiVersion: '2024-06-20' })
+  return new Stripe(key, { apiVersion: '2026-05-27.dahlia' })
 }
 
 async function createFois4Session(formule: string, nbEleves: number): Promise<string> {
