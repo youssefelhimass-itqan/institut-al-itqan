@@ -587,50 +587,53 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
             )}
 
             <div className="space-y-3 pt-2">
-              {/* Lien invisible utilisé pour la redirection Stripe — compatible Safari mobile */}
+              {/* ── Formulaire natif pour fois4 — POST → 303 redirect, compatible Safari iOS ── */}
+              {mode === 'fois4' && formule && (
+                <form
+                  id="checkout-form-fois4"
+                  method="POST"
+                  action="/api/checkout"
+                  style={{ display: 'none' }}
+                  aria-hidden="true">
+                  <input type="hidden" name="formule"   value={formule} />
+                  <input type="hidden" name="nbEleves"  value={String(nbEleves)} />
+                  <input type="hidden" name="mode"      value="fois4" />
+                </form>
+              )}
+
+              {/* Lien invisible pour comptant — compatible Safari iOS */}
               <a id="stripe-redirect-link" href="#" target="_self" style={{ display: 'none' }} aria-hidden="true" />
 
               <button disabled={!canPay || paying}
                 className="btn-primary w-full py-4 rounded-2xl text-base font-bold flex items-center justify-center gap-3 disabled:opacity-40"
-                onClick={async () => {
+                onClick={() => {
                   if (!formule || paying) return
                   setPaying(true)
                   setPayError('')
 
-                  // Comptant ET 4 fois : redirection directe via Payment Link — synchrone, compatible Safari iOS
-                  const lien = formule ? STRIPE_LINKS[formule]?.[nbEleves]?.[mode] : null
-                  if (lien) {
-                    console.log(`[Stripe] ${mode} — redirection directe:`, lien)
-                    const anchor = document.getElementById('stripe-redirect-link') as HTMLAnchorElement | null
-                    if (anchor) {
-                      anchor.href = lien
-                      anchor.click()
+                  if (mode === 'fois4') {
+                    // Soumettre le formulaire HTML natif → POST /api/checkout → 303 vers Stripe
+                    // Synchrone du point de vue Safari : jamais bloqué
+                    const form = document.getElementById('checkout-form-fois4') as HTMLFormElement | null
+                    if (form) {
+                      console.log('[Stripe] fois4 — soumission formulaire natif')
+                      form.submit()
                     } else {
-                      window.location.href = lien
+                      setPayError('Erreur technique. Rechargez la page.')
+                      setPaying(false)
                     }
                     return
                   }
 
-                  // Fallback API si le lien n'est pas dans STRIPE_LINKS (ne devrait pas arriver)
-                  try {
-                    console.log('[Stripe] Fallback /api/checkout:', { formule, nbEleves, mode })
-                    const res  = await fetch('/api/checkout', {
-                      method:  'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body:    JSON.stringify({ formule, nbEleves, mode }),
-                    })
-                    const data = await res.json()
-                    if (!res.ok || !data.url) {
-                      console.error('[Stripe] Erreur API:', data)
-                      setPayError(data.error || 'Erreur lors de la création du paiement.')
-                      setPaying(false)
-                      return
-                    }
-                    console.log('[Stripe] URL Checkout reçue:', data.url)
-                    window.location.href = data.url
-                  } catch (err) {
-                    console.error('[Stripe] Erreur réseau:', err)
-                    setPayError('Erreur réseau. Vérifiez votre connexion et réessayez.')
+                  // Comptant — Payment Link direct, synchrone
+                  const lien = STRIPE_LINKS[formule]?.[nbEleves]?.comptant
+                  if (lien) {
+                    console.log('[Stripe] comptant — redirection directe:', lien)
+                    const anchor = document.getElementById('stripe-redirect-link') as HTMLAnchorElement | null
+                    if (anchor) { anchor.href = lien; anchor.click() }
+                    else        { window.location.href = lien }
+                  } else {
+                    setPayError('Lien de paiement introuvable.')
                     setPaying(false)
                   }
                 }}>
