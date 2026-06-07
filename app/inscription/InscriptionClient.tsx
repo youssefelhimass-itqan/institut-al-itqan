@@ -597,45 +597,37 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
                   setPaying(true)
                   setPayError('')
 
-                  // Pour le mode comptant : redirection directe via Payment Link (pas d'async)
-                  if (mode === 'comptant') {
-                    const lien = formule ? STRIPE_LINKS[formule]?.[nbEleves]?.comptant : null
-                    if (lien) {
-                      console.log('[Stripe] Comptant — redirection directe:', lien)
+                  // Comptant ET 4 fois : redirection directe via Payment Link — synchrone, compatible Safari iOS
+                  const lien = formule ? STRIPE_LINKS[formule]?.[nbEleves]?.[mode] : null
+                  if (lien) {
+                    console.log(`[Stripe] ${mode} — redirection directe:`, lien)
+                    const anchor = document.getElementById('stripe-redirect-link') as HTMLAnchorElement | null
+                    if (anchor) {
+                      anchor.href = lien
+                      anchor.click()
+                    } else {
                       window.location.href = lien
-                      return
                     }
+                    return
                   }
 
-                  // Pour le mode 4 fois : appel API puis redirection
+                  // Fallback API si le lien n'est pas dans STRIPE_LINKS (ne devrait pas arriver)
                   try {
-                    console.log('[Stripe] 4 fois — appel /api/checkout:', { formule, nbEleves, mode })
+                    console.log('[Stripe] Fallback /api/checkout:', { formule, nbEleves, mode })
                     const res  = await fetch('/api/checkout', {
                       method:  'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body:    JSON.stringify({ formule, nbEleves, mode }),
                     })
                     const data = await res.json()
-
                     if (!res.ok || !data.url) {
                       console.error('[Stripe] Erreur API:', data)
                       setPayError(data.error || 'Erreur lors de la création du paiement.')
                       setPaying(false)
                       return
                     }
-
                     console.log('[Stripe] URL Checkout reçue:', data.url)
-
-                    // Technique compatible Safari iOS : modifier le href d'un <a> existant
-                    // puis le cliquer — jamais bloqué car le <a> est dans le DOM avant le clic
-                    const anchor = document.getElementById('stripe-redirect-link') as HTMLAnchorElement | null
-                    if (anchor) {
-                      anchor.href = data.url
-                      anchor.click()
-                    } else {
-                      // Fallback universel
-                      window.location.href = data.url
-                    }
+                    window.location.href = data.url
                   } catch (err) {
                     console.error('[Stripe] Erreur réseau:', err)
                     setPayError('Erreur réseau. Vérifiez votre connexion et réessayez.')
