@@ -76,7 +76,7 @@ const FORMULES = [
 
 const CLASSES_MENU = [
   { id: 'coran',     full: 'Classes Coran',            sub: 'Enfants & Adultes' },
-  { id: 'al-itqan', full: 'Classes Arabe et Religion',  sub: 'Enfants'           },
+  { id: 'al-itqan', full: 'Classe Arabe et Religion',  sub: 'Enfants'           },
   { id: 'arabe',    full: 'Classes Arabe',             sub: 'Adultes'           },
 ]
 
@@ -334,7 +334,7 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
 
                 {/* ── Bloc total ── */}
                 <div className="mx-6 mb-5 mt-3 rounded-xl px-5 py-4"
-                  style={{ background: 'rgba(139,96,32,0.08)', border: '1px solid var(--border)' }}>
+                  style={{ background: 'rgba(140,90,60,0.07)', border: '1px solid var(--border)' }}>
                   <div className="flex items-center justify-between">
 
                     {/* Gauche : label + icône calculatrice */}
@@ -587,34 +587,77 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
             )}
 
             <div className="space-y-3 pt-2">
-              <button disabled={!canPay}
+              {/* Lien invisible utilisé pour la redirection Stripe — compatible Safari mobile */}
+              <a id="stripe-redirect-link" href="#" target="_self" style={{ display: 'none' }} aria-hidden="true" />
+
+              <button disabled={!canPay || paying}
                 className="btn-primary w-full py-4 rounded-2xl text-base font-bold flex items-center justify-center gap-3 disabled:opacity-40"
                 onClick={async () => {
                   if (!formule || paying) return
                   setPaying(true)
                   setPayError('')
+
+                  // Pour le mode comptant : redirection directe via Payment Link (pas d'async)
+                  if (mode === 'comptant') {
+                    const lien = formule ? STRIPE_LINKS[formule]?.[nbEleves]?.comptant : null
+                    if (lien) {
+                      console.log('[Stripe] Comptant — redirection directe:', lien)
+                      window.location.href = lien
+                      return
+                    }
+                  }
+
+                  // Pour le mode 4 fois : appel API puis redirection
                   try {
+                    console.log('[Stripe] 4 fois — appel /api/checkout:', { formule, nbEleves, mode })
                     const res  = await fetch('/api/checkout', {
                       method:  'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body:    JSON.stringify({ formule, nbEleves, mode }),
                     })
                     const data = await res.json()
+
                     if (!res.ok || !data.url) {
+                      console.error('[Stripe] Erreur API:', data)
                       setPayError(data.error || 'Erreur lors de la création du paiement.')
                       setPaying(false)
                       return
                     }
-                    window.location.href = data.url
-                  } catch {
+
+                    console.log('[Stripe] URL Checkout reçue:', data.url)
+
+                    // Technique compatible Safari iOS : modifier le href d'un <a> existant
+                    // puis le cliquer — jamais bloqué car le <a> est dans le DOM avant le clic
+                    const anchor = document.getElementById('stripe-redirect-link') as HTMLAnchorElement | null
+                    if (anchor) {
+                      anchor.href = data.url
+                      anchor.click()
+                    } else {
+                      // Fallback universel
+                      window.location.href = data.url
+                    }
+                  } catch (err) {
+                    console.error('[Stripe] Erreur réseau:', err)
                     setPayError('Erreur réseau. Vérifiez votre connexion et réessayez.')
                     setPaying(false)
                   }
                 }}>
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-                Procéder au paiement
+                {paying ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                    </svg>
+                    Redirection vers Stripe…
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    Procéder au paiement
+                  </>
+                )}
               </button>
               <p className="text-xs text-center" style={{ color: 'var(--text-3)' }}>
                 Paiement sécurisé — vous serez redirigé vers Stripe
