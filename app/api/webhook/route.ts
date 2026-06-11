@@ -15,9 +15,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  
-})
+// Initialisé à la demande — garantit que process.env est disponible à l'exécution
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-06-20' })
+}
 
 const FORMULE_LABEL: Record<string, string> = {
   coran:            'Classe Coran (Enfants & Adultes)',
@@ -174,30 +175,52 @@ export async function POST(req: NextRequest) {
 
   let event: Stripe.Event
   try {
-    event = stripe.webhooks.constructEvent(body, signature, secret)
+    event = getStripe().webhooks.constructEvent(body, signature, secret)
   } catch {
     return NextResponse.json({ error: 'Signature invalide.' }, { status: 400 })
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // 1. Abonnement créé → appliquer cancel_at (arrêt automatique 4 mois)
+  // 1. Abonnement créé → appliquer cancel_at (arrêt automatique après 4 mois)
+  //
+  // Cas A : abonnements via /api/checkout (3 anciennes classes)
+  //         → métadonnées cancel_after=4 + institut=Al-Itqan présentes
+  // Cas B : abonnements via Payment Links directs (2 nouvelles classes)
+  //         → pas de métadonnées → détection par Price ID
   // ════════════════════════════════════════════════════════════════════════════
-  if (event.type === 'customer.subscription.created') {
-    const sub  = event.data.object as Stripe.Subscription
-    const meta = sub.metadata ?? {}
 
-    if (meta.cancel_after === '4' && meta.institut === 'Al-Itqan') {
+  // Price IDs récurrents associés aux Payment Links "4 fois" des nouvelles classes.
+  // À retrouver dans Stripe Dashboard → Payment Links → cliquer le lien → Price ID.
+  // Remplacez ces valeurs si les Price IDs réels sont différents.
+  const PAYMENT_LINK_PRICE_IDS = new Set([
+    'price_1Tgv5YGc0wtxjNeQJBI3KIZP', // Sciences Islamiques — 4 fois (69 €/mois)
+    'price_1TgvGuGc0wtxjNeQ3NIHq0t2', // Arabe et Compréhension — 4 fois (69 €/mois)
+  ])
+
+  if (event.type === 'customer.subscription.created') {
+    const sub    = event.data.object as Stripe.Subscription
+    const meta   = sub.metadata ?? {}
+    const priceId = sub.items?.data?.[0]?.price?.id ?? ''
+
+    const isViaCheckout     = meta.cancel_after === '4' && meta.institut === 'Al-Itqan'
+    const isViaPaymentLink  = PAYMENT_LINK_PRICE_IDS.has(priceId)
+
+    if (isViaCheckout || isViaPaymentLink) {
       const cancelAt = new Date(sub.start_date * 1000)
       cancelAt.setMonth(cancelAt.getMonth() + 4)
 
       try {
-        await stripe.subscriptions.update(sub.id, {
+        await getStripe().subscriptions.update(sub.id, {
           cancel_at: Math.floor(cancelAt.getTime() / 1000),
         })
-        console.log(`[webhook] cancel_at appliqué → ${sub.id} se termine le ${cancelAt.toISOString()}`)
+        const src = isViaCheckout ? 'checkout API' : `payment-link (${priceId})`
+        console.log(`[webhook] cancel_at appliqué → ${sub.id} (${src}) → fin le ${cancelAt.toISOString()}`)
       } catch (err) {
         console.error('[webhook] Erreur cancel_at :', err)
       }
+    } else {
+      // Log utile pour diagnostiquer tout nouvel abonnement non reconnu
+      console.log(`[webhook] Sub ${sub.id} ignoré — priceId:${priceId} meta:${JSON.stringify(meta)}`)
     }
   }
 

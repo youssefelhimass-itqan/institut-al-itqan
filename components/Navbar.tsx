@@ -6,9 +6,11 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 const CLASSES_MENU = [
-  { id: 'coran',     full: 'Classes Coran',           sub: 'Enfants & Adultes' },
-  { id: 'al-itqan', full: 'Classes Arabe et Religion', sub: 'Enfants'           },
-  { id: 'arabe',    full: 'Classes Arabe',            sub: 'Adultes'           },
+  { id: 'coran',               full: 'Classes Coran',                 sub: 'Enfants & Adultes' },
+  { id: 'al-itqan',            full: 'Classe Arabe et Religion',      sub: 'Enfants'           },
+  { id: 'arabe',               full: 'Classes Arabe',                 sub: 'Adultes'           },
+  { id: 'sciences-islamiques', full: 'Classe Sciences Islamiques',    sub: 'Adultes · Mixte'   },
+  { id: 'arabe-comprehension', full: 'Classe Arabe et Compréhension', sub: 'Adultes · Mixte'   },
 ]
 
 type Props = {

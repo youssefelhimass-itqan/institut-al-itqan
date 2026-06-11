@@ -69,15 +69,19 @@ const IconShield = ({ color }: { color: string }) => (
 )
 
 const FORMULES = [
-  { id: 'coran',          titre: 'Classe Coran',             sous: 'Enfants & Adultes',  emoji: 'book', desc: 'Mémorisation du Coran, tajwîd et suivi régulier en petits groupes.', couleur: '#C4365A', bg: 'rgba(196,54,90,0.10)' },
-  { id: 'arabe-religion', titre: 'Classe Arabe et Religion', sous: 'Enfants',             emoji: 'arch', desc: 'Arabe fondamental, compréhension religieuse et bases solides dès le plus jeune âge.', couleur: '#3A8C62', bg: 'rgba(58,140,98,0.10)' },
-  { id: 'arabe-adultes',  titre: 'Classe Arabe Adultes',     sous: 'Adultes débutants',   emoji: 'pen', desc: 'Lecture, écriture et bases de la langue arabe — accompagnement adapté aux adultes.', couleur: '#8B6020', bg: 'rgba(139,96,32,0.10)' },
+  { id: 'coran',                titre: 'Coran',                    sous: 'Enfants & Adultes', emoji: 'book', desc: 'Mémorisation du Coran, tajwîd et suivi régulier en petits groupes.', couleur: '#C4365A', bg: 'rgba(196,54,90,0.10)' },
+  { id: 'arabe-religion',       titre: 'Arabe et Religion',        sous: 'Enfants',           emoji: 'arch', desc: 'Arabe fondamental, compréhension religieuse et bases solides dès le plus jeune âge.', couleur: '#3A8C62', bg: 'rgba(58,140,98,0.10)' },
+  { id: 'arabe-adultes',        titre: 'Lecture Arabe',            sous: 'Adultes débutants', emoji: 'pen',  desc: 'Lecture, écriture et bases de la langue arabe — accompagnement adapté aux adultes.', couleur: '#8B6020', bg: 'rgba(139,96,32,0.10)' },
+  { id: 'sciences-islamiques',  titre: 'Sciences Islamiques',      sous: 'Adultes · Mixte',   emoji: 'book', desc: 'Cours de sciences islamiques pour adultes, hommes et femmes. Approfondissement des fondements de la religion.', couleur: '#B89B6A', bg: 'rgba(184,155,106,0.10)' },
+  { id: 'arabe-comprehension',  titre: 'Arabe et Compréhension',          sous: 'Adultes · Mixte',   emoji: 'pen',  desc: "Cours d'arabe pour adultes : apprendre la langue arabe en profondeur, la comprendre et la parler.", couleur: '#8B6020', bg: 'rgba(139,96,32,0.10)' },
 ]
 
 const CLASSES_MENU = [
-  { id: 'coran',     full: 'Classes Coran',            sub: 'Enfants & Adultes' },
-  { id: 'al-itqan', full: 'Classe Arabe et Religion',  sub: 'Enfants'           },
-  { id: 'arabe',    full: 'Classes Arabe',             sub: 'Adultes'           },
+  { id: 'coran',               full: 'Classes Coran',                 sub: 'Enfants & Adultes' },
+  { id: 'al-itqan',            full: 'Classe Arabe et Religion',      sub: 'Enfants'           },
+  { id: 'arabe',               full: 'Classes Arabe',                 sub: 'Adultes'           },
+  { id: 'sciences-islamiques', full: 'Classe Sciences Islamiques',    sub: 'Adultes · Mixte'   },
+  { id: 'arabe-comprehension', full: 'Classe Arabe et Compréhension', sub: 'Adultes · Mixte'   },
 ]
 
 const NB_ELEVES = [1, 2, 3, 4, 5]
@@ -110,10 +114,27 @@ const STRIPE_LINKS: Record<string, Record<number, { comptant: string; fois4: str
     4: { comptant: 'https://buy.stripe.com/cNicN5acwdg8c7s0423sI0v', fois4: 'https://buy.stripe.com/8x2cN5esMcc4b3o0423sI0w' },
     5: { comptant: 'https://buy.stripe.com/9B64gzesMb80dbw0423sI0x', fois4: 'https://buy.stripe.com/dRm8wP4Scb809Zk4ki3sI0y' },
   },
+  'sciences-islamiques': {
+    1: { comptant: 'https://buy.stripe.com/eVq3cvbgA5NG3AW1863sI0z', fois4: 'https://buy.stripe.com/14A9AT98s6RK9Zk4ki3sI0A' },
+    2: { comptant: 'https://buy.stripe.com/eVq3cvbgA5NG3AW1863sI0z', fois4: 'https://buy.stripe.com/14A9AT98s6RK9Zk4ki3sI0A' },
+    3: { comptant: 'https://buy.stripe.com/eVq3cvbgA5NG3AW1863sI0z', fois4: 'https://buy.stripe.com/14A9AT98s6RK9Zk4ki3sI0A' },
+    4: { comptant: 'https://buy.stripe.com/eVq3cvbgA5NG3AW1863sI0z', fois4: 'https://buy.stripe.com/14A9AT98s6RK9Zk4ki3sI0A' },
+    5: { comptant: 'https://buy.stripe.com/eVq3cvbgA5NG3AW1863sI0z', fois4: 'https://buy.stripe.com/14A9AT98s6RK9Zk4ki3sI0A' },
+  },
+  'arabe-comprehension': {
+    1: { comptant: 'https://buy.stripe.com/dRmfZhckE2Bub3o8Ay3sI0B', fois4: 'https://buy.stripe.com/6oUcN54Sca3W0oKg303sI0C' },
+    2: { comptant: 'https://buy.stripe.com/dRmfZhckE2Bub3o8Ay3sI0B', fois4: 'https://buy.stripe.com/6oUcN54Sca3W0oKg303sI0C' },
+    3: { comptant: 'https://buy.stripe.com/dRmfZhckE2Bub3o8Ay3sI0B', fois4: 'https://buy.stripe.com/6oUcN54Sca3W0oKg303sI0C' },
+    4: { comptant: 'https://buy.stripe.com/dRmfZhckE2Bub3o8Ay3sI0B', fois4: 'https://buy.stripe.com/6oUcN54Sca3W0oKg303sI0C' },
+    5: { comptant: 'https://buy.stripe.com/dRmfZhckE2Bub3o8Ay3sI0B', fois4: 'https://buy.stripe.com/6oUcN54Sca3W0oKg303sI0C' },
+  },
 }
 
 const fmt = (n: number) =>
   n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
+
+// Classes sans sélection du nombre d'élèves (lien Stripe unique, choix sur Stripe)
+const FLAT_PRICE_CLASSES = ['sciences-islamiques', 'arabe-comprehension']
 
 export default function InscriptionClient({ userEmail }: { userEmail: string }) {
   const router   = useRouter()
@@ -166,7 +187,10 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
 
         {/* Indicateur d'étapes */}
         <div className="flex items-center gap-3 mb-10 animate-fade-up delay-1">
-          {[{ n: 1, label: 'Formule' }, { n: 2, label: 'Élèves' }, { n: 3, label: 'Paiement' }].map((s, i) => (
+          {(formule && FLAT_PRICE_CLASSES.includes(formule)
+            ? [{ n: 1, label: 'Formule' }, { n: 3, label: 'Paiement' }]
+            : [{ n: 1, label: 'Formule' }, { n: 2, label: 'Élèves' }, { n: 3, label: 'Paiement' }]
+          ).map((s, i) => (
             <div key={s.n} className="flex items-center gap-3 flex-1">
               <div className="flex items-center gap-2 shrink-0">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300"
@@ -178,7 +202,7 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
                 <p className="text-xs font-semibold hidden sm:block"
                   style={{ color: step >= s.n ? 'var(--text-1)' : 'var(--text-3)' }}>{s.label}</p>
               </div>
-              {i < 2 && <div className="flex-1 h-px transition-all duration-300"
+              {i < (formule && FLAT_PRICE_CLASSES.includes(formule) ? 1 : 2) && <div className="flex-1 h-px transition-all duration-300"
                 style={{ background: step > s.n ? 'var(--accent)' : 'var(--border)' }} />}
             </div>
           ))}
@@ -228,7 +252,13 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
             ))}
 
             <div className="flex justify-end pt-2">
-              <button onClick={() => canNext1 && setStep(2)} disabled={!canNext1}
+              <button
+                onClick={() => {
+                  if (!canNext1) return
+                  // Sauter l'étape élèves pour les classes à tarif unique
+                  setStep(formule && FLAT_PRICE_CLASSES.includes(formule) ? 3 : 2)
+                }}
+                disabled={!canNext1}
                 className="btn-primary px-8 py-3 rounded-xl text-sm font-semibold disabled:opacity-40">
                 Continuer →
               </button>
@@ -587,45 +617,51 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
             )}
 
             <div className="space-y-3 pt-2">
+              {/* Formulaire natif POST pour le mode 4 fois (anciennes classes)
+                  Soumettre un <form> est synchrone → jamais bloqué par Safari iOS
+                  /api/checkout reçoit le POST et retourne une redirection 303 vers Stripe */}
+              {mode === 'fois4' && formule && !FLAT_PRICE_CLASSES.includes(formule) && (
+                <form id="checkout-form-fois4" method="POST" action="/api/checkout"
+                  style={{ display: 'none' }} aria-hidden="true">
+                  <input type="hidden" name="formule"  value={formule} />
+                  <input type="hidden" name="nbEleves" value={String(nbEleves)} />
+                  <input type="hidden" name="mode"     value="fois4" />
+                </form>
+              )}
+
               <button disabled={!canPay || paying}
                 className="btn-primary w-full py-4 rounded-2xl text-base font-bold flex items-center justify-center gap-3 disabled:opacity-40"
-                onClick={async () => {
+                onClick={() => {
                   if (!formule || paying) return
                   setPaying(true)
                   setPayError('')
 
-                  // Pour le mode comptant : redirection directe via Payment Link (pas d'async)
-                  if (mode === 'comptant') {
-                    const lien = formule ? STRIPE_LINKS[formule]?.[nbEleves]?.comptant : null
-                    if (lien) {
-                      console.log('[Stripe] Comptant — redirection directe:', lien)
-                      window.location.href = lien
-                      return
-                    }
+                  // Flat classes (SI + AC) : redirection directe — synchrone, compatible Safari
+                  if (FLAT_PRICE_CLASSES.includes(formule)) {
+                    const lien = STRIPE_LINKS[formule]?.[1]?.[mode] ?? null
+                    if (lien) { window.location.href = lien; return }
+                    setPayError('Lien de paiement introuvable.')
+                    setPaying(false)
+                    return
                   }
 
-                  // Pour le mode 4 fois : appel API puis redirection
-                  try {
-                    console.log('[Stripe] 4 fois — appel /api/checkout:', { formule, nbEleves, mode })
-                    const res  = await fetch('/api/checkout', {
-                      method:  'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body:    JSON.stringify({ formule, nbEleves, mode }),
-                    })
-                    const data = await res.json()
+                  // Comptant (autres classes) : Payment Link direct — synchrone
+                  if (mode === 'comptant') {
+                    const lien = STRIPE_LINKS[formule]?.[nbEleves]?.comptant ?? null
+                    if (lien) { window.location.href = lien; return }
+                    setPayError('Lien de paiement introuvable.')
+                    setPaying(false)
+                    return
+                  }
 
-                    if (!res.ok || !data.url) {
-                      console.error('[Stripe] Erreur API:', data)
-                      setPayError(data.error || 'Erreur lors de la création du paiement.')
-                      setPaying(false)
-                      return
-                    }
-
-                    console.log('[Stripe] URL Checkout reçue:', data.url)
-                    window.location.href = data.url
-                  } catch (err) {
-                    console.error('[Stripe] Erreur réseau:', err)
-                    setPayError('Erreur réseau. Vérifiez votre connexion et réessayez.')
+                  // 4 fois (autres classes) : soumettre le formulaire natif POST
+                  // → /api/checkout → HTTP 303 → Stripe Checkout
+                  // Entièrement synchrone, jamais bloqué par Safari iOS
+                  const form = document.getElementById('checkout-form-fois4') as HTMLFormElement | null
+                  if (form) {
+                    form.submit()
+                  } else {
+                    setPayError('Erreur technique. Rechargez la page.')
                     setPaying(false)
                   }
                 }}>
@@ -657,7 +693,9 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
             </div>
 
             <div className="flex justify-start">
-              <button onClick={() => setStep(2)} className="btn-secondary px-6 py-3 rounded-xl text-sm">← Retour</button>
+              <button
+                onClick={() => setStep(formule && FLAT_PRICE_CLASSES.includes(formule) ? 1 : 2)}
+                className="btn-secondary px-6 py-3 rounded-xl text-sm">← Retour</button>
             </div>
           </div>
         )}

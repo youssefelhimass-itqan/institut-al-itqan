@@ -32,21 +32,27 @@ type Props = {
 const INSCRIPTION_URL = 'https://forms.gle/22KxDezaptLUqKPE7'
 
 const CLASSES_MENU = [
-  { id: 'coran',     label: 'Coran',    full: 'Classes Coran',    sub: 'Enfants & Adultes' },
-  { id: 'al-itqan', label: 'Arabe & Religion', full: 'Classe Arabe et Religion', sub: 'Enfants' },
-  { id: 'arabe',    label: 'Arabe',    full: 'Classes Arabe',    sub: 'Adultes'           },
+  { id: 'coran',              label: 'Coran',                  full: 'Classe Coran',                     sub: 'Enfants & Adultes' },
+  { id: 'al-itqan',           label: 'Arabe et Religion',     full: 'Classe Arabe et Religion',          sub: 'Enfants'           },
+  { id: 'arabe',              label: 'Lecture Arabe',         full: 'Classe Lecture Arabe',              sub: 'Adultes'           },
+  { id: 'sciences-islamiques',label: 'Sciences Islamiques',   full: 'Classe Sciences Islamiques',        sub: 'Adultes · Mixte'   },
+  { id: 'arabe-comprehension',label: 'Arabe et Compréhension',full: 'Classe Arabe et Compréhension',     sub: 'Adultes · Mixte'   },
 ]
 
 const CAT_COLOR: Record<string, string> = {
-  coran:      '#8C5A3C',   /* slate — même que l'accent */
-  'al-itqan': '#B89B6A',
-  arabe:      '#B89B6A',
+  coran:                '#8C5A3C',
+  'al-itqan':           '#B89B6A',
+  arabe:                '#B89B6A',
+  'sciences-islamiques':'#B89B6A',
+  'arabe-comprehension':'#B89B6A',
 }
 
 const CAT_BG: Record<string, string> = {
-  coran:      'rgba(140,90,60,0.08)',
-  'al-itqan': 'rgba(90,122,92,0.08)',
-  arabe:      'rgba(92,80,120,0.08)',
+  coran:                'rgba(140,90,60,0.08)',
+  'al-itqan':           'rgba(184,155,106,0.08)',
+  arabe:                'rgba(184,155,106,0.08)',
+  'sciences-islamiques':'rgba(184,155,106,0.08)',
+  'arabe-comprehension':'rgba(184,155,106,0.08)',
 }
 
 const TYPE_ICON: Record<string, string> = {
@@ -470,12 +476,12 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
           <div className="animate-fade-up">
 
             {/* Sélecteur catégorie */}
-            <div className="flex gap-2 overflow-x-auto pb-1 mb-7">
+            <div className="flex flex-wrap gap-2 pb-1 mb-7">
               {CLASSES_MENU.map(cl => (
                 <button
                   key={cl.id}
                   onClick={() => setClasseTab(cl.id)}
-                  className="shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200"
+                  className="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
                   style={classeTab === cl.id
                     ? { background: '#B89B6A', color: '#FFFFFF', boxShadow: '0 4px 16px rgba(184,155,106,0.40)', border: '2px solid transparent' }
                     : { background: '#F7F3EC', color: '#5C4033', border: '2px solid rgba(184,155,106,0.25)' }
