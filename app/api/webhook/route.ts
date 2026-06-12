@@ -17,7 +17,7 @@ import Stripe from 'stripe'
 
 // Initialisé à la demande — garantit que process.env est disponible à l'exécution
 function getStripe() {
-  return new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-06-20' })
+  return new Stripe(process.env.STRIPE_SECRET_KEY!, { })
 }
 
 const FORMULE_LABEL: Record<string, string> = {
