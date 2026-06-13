@@ -32,12 +32,25 @@ type Props = {
 const INSCRIPTION_URL = 'https://forms.gle/22KxDezaptLUqKPE7'
 
 const CLASSES_MENU = [
-  { id: 'coran',              label: 'Coran',                  full: 'Classe Coran',                     sub: 'Enfants & Adultes' },
-  { id: 'al-itqan',           label: 'Arabe et Religion',     full: 'Classe Arabe et Religion',          sub: 'Enfants'           },
-  { id: 'arabe',              label: 'Lecture Arabe',         full: 'Classe Lecture Arabe',              sub: 'Adultes'           },
-  { id: 'sciences-islamiques',label: 'Sciences Islamiques',   full: 'Classe Sciences Islamiques',        sub: 'Adultes · Mixte'   },
-  { id: 'arabe-comprehension',label: 'Arabe et Compréhension',full: 'Classe Arabe et Compréhension',     sub: 'Adultes · Mixte'   },
+  { id: 'coran',              label: 'Coran',                  full: 'Classe Coran',                     sub: 'Enfants & Adultes', icon: 'book'   },
+  { id: 'al-itqan',           label: 'Arabe et Religion',     full: 'Classe Arabe et Religion',          sub: 'Enfants',           icon: 'arch'   },
+  { id: 'arabe',              label: 'Lecture Arabe',         full: 'Classe Lecture Arabe',              sub: 'Adultes',           icon: 'pen'    },
+  { id: 'sciences-islamiques',label: 'Sciences Islamiques',   full: 'Classe Sciences Islamiques',        sub: 'Adultes · Mixte',   icon: 'star'   },
+  { id: 'arabe-comprehension',label: 'Arabe et Compréhension',full: 'Classe Arabe et Compréhension',     sub: 'Adultes · Mixte',   icon: 'speech' },
 ]
+
+// ── Icônes élégantes (trait fin, cohérentes) ───────────────────────────────────
+const ClassIcon = ({ type, className = 'w-5 h-5' }: { type: string; className?: string }) => {
+  const common = { className, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', strokeWidth: 1.6 }
+  switch (type) {
+    case 'book':   return <svg {...common}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.5c-1.5-1-4-1.5-7-1.5v13c3 0 5.5.5 7 1.5 1.5-1 4-1.5 7-1.5V5c-3 0-5.5.5-7 1.5Z"/><path strokeLinecap="round" d="M12 6.5v13"/></svg>
+    case 'arch':   return <svg {...common}><path strokeLinecap="round" strokeLinejoin="round" d="M4 20V11a8 8 0 0 1 16 0v9"/><path strokeLinecap="round" d="M4 20h16M9 20v-5a3 3 0 0 1 6 0v5"/></svg>
+    case 'pen':    return <svg {...common}><path strokeLinecap="round" strokeLinejoin="round" d="M4 20l4-1 11-11-3-3L5 16l-1 4Z"/><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l3 3"/></svg>
+    case 'star':   return <svg {...common}><path strokeLinecap="round" strokeLinejoin="round" d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8L3.5 9.2l5.9-.9L12 3Z"/></svg>
+    case 'speech': return <svg {...common}><path strokeLinecap="round" strokeLinejoin="round" d="M21 11.5a8.5 8.5 0 1 1-3.8-7.1"/><path strokeLinecap="round" strokeLinejoin="round" d="M21 4l-9 9-3 1 1-3 9-9Z"/></svg>
+    default:       return <svg {...common}><circle cx="12" cy="12" r="9"/></svg>
+  }
+}
 
 const CAT_COLOR: Record<string, string> = {
   coran:                '#8C5A3C',
@@ -60,6 +73,76 @@ const TYPE_ICON: Record<string, string> = {
 }
 
 const JOURS_ORDRE = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche']
+
+// ── Motif géométrique islamique discret (SVG, en arrière-plan) ────────────────
+const IslamicPattern = ({ opacity = 0.05 }: { opacity?: number }) => (
+  <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <pattern id="islamic-star" width="56" height="56" patternUnits="userSpaceOnUse">
+        <g fill="none" stroke="currentColor" strokeWidth="1">
+          <path d="M28 2 L40 14 L52 2 L52 28 L40 16 L52 28 L40 40 L52 28 M28 2 L16 14 L4 2 L4 28 L16 16 L4 28 L16 40 L4 28 M28 2 L28 28 M28 54 L28 28 M28 54 L16 42 L4 54 L4 28 M28 54 L40 42 L52 54 L52 28" />
+          <circle cx="28" cy="28" r="6" />
+        </g>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#islamic-star)" style={{ color: '#B89B6A', opacity }} />
+  </svg>
+)
+
+
+// ── Photographies — institut islamique premium (Unsplash) ─────────────────────
+const PHOTOS = {
+  hero:               '/images/hero.jpeg',
+  mosque:             'https://images.unsplash.com/photo-1564769662533-4f00a87b4056?q=80&w=1200&auto=format&fit=crop',
+  books:              'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=1200&auto=format&fit=crop',
+  writing:            'https://images.unsplash.com/photo-1455390582262-044cdead277a?q=80&w=1200&auto=format&fit=crop',
+  manuscript:         'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=1200&auto=format&fit=crop',
+  classroom:          'https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=1200&auto=format&fit=crop',
+  quran:              'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?q=80&w=1200&auto=format&fit=crop',
+  invocation:         '/images/invocation.jpeg',
+  sincerite:          '/images/sincerite.jpeg',
+  assiduite:          '/images/assiduite.jpeg',
+} as const
+
+// ── Image de fond par catégorie de classe ──────────────────────────────────────
+// Affiches officielles 16:9 (logo + titre + sous-titre déjà intégrés au design)
+const CAT_PHOTO: Record<string, string> = {
+  coran:                '/images/coran.jpeg',
+  'al-itqan':           '/images/arabe-religion.jpeg',
+  arabe:                '/images/lecture-arabe.jpeg',
+  'sciences-islamiques':'/images/sciences-islamiques.jpeg',
+  'arabe-comprehension':'/images/arabe-comprehension.jpeg',
+}
+
+// Fond derrière l'affiche — ton clair assorti au design des affiches (#F4EBDD/crème)
+const CAT_IMG_BG: Record<string, string> = {
+  coran:                '#F4EBDD',
+  'al-itqan':           '#F4EBDD',
+  arabe:                '#F4EBDD',
+  'sciences-islamiques':'#F4EBDD',
+  'arabe-comprehension':'#F4EBDD',
+}
+
+const SectionDivider = () => (
+  <div className="flex items-center justify-center gap-3 my-10 select-none" aria-hidden="true">
+    <div className="h-px flex-1 max-w-[120px]" style={{ background: 'linear-gradient(to right, transparent, rgba(184,155,106,0.4))' }} />
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ color: '#B89B6A' }}>
+      <path d="M12 2 L15 9 L22 12 L15 15 L12 22 L9 15 L2 12 L9 9 Z" stroke="currentColor" strokeWidth="1.2" fill="rgba(184,155,106,0.12)" />
+      <circle cx="12" cy="12" r="2" fill="currentColor" opacity="0.6" />
+    </svg>
+    <div className="h-px flex-1 max-w-[120px]" style={{ background: 'linear-gradient(to left, transparent, rgba(184,155,106,0.4))' }} />
+  </div>
+)
+
+// ── Bannière hero — photo institutionnelle plein cadre ──────────────────────────
+// ── Bannière hero — affiche officielle, affichée intégralement (sans recadrage) ──
+const HeroBanner = () => (
+  <div className="relative overflow-hidden rounded-3xl mb-10 animate-fade-up w-full aspect-[16/9] flex items-center justify-center"
+    style={{ boxShadow: '0 20px 60px rgba(74,53,32,0.22), 0 4px 16px rgba(74,53,32,0.10)', background: '#F4EBDD' }}>
+    <img src={PHOTOS.hero} alt="Et dis : Ô mon Seigneur, accroît mes connaissances — Institut Al-Itqan"
+      className="max-w-full max-h-full w-full h-full object-contain" loading="eager" />
+  </div>
+)
 
 const fmtDate = (s: string) =>
   new Date(s).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -199,15 +282,23 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
 
   // ─── Rendu ─────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
+
+      {/* Motif géométrique islamique très subtil, fixe en arrière-plan */}
+      <div className="fixed inset-0 pointer-events-none z-0" style={{ color: '#B89B6A' }}>
+        <IslamicPattern opacity={0.025} />
+      </div>
 
       {/* ══ HEADER ════════════════════════════════════════════════════════ */}
+      <div className="relative z-[100]">
       <Navbar
         userEmail={user.email}
         activeTab={tab}
         onTabChange={goTo}
         onClasseChange={setClasseTab}
       />
+      </div>
+      <div className="relative z-10">
 
             {/* ══ CONTENU ══════════════════════════════════════════════════════════ */}
       <main className="max-w-3xl mx-auto px-5 py-10">
@@ -215,6 +306,9 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
         {/* ── ANNONCES ────────────────────────────────────────────────────── */}
         {tab === 'annonces' && (
           <div className="animate-fade-up">
+            <HeroBanner />
+            <SectionDivider />
+
             <div className="mb-8">
               <h1 className="text-[28px] font-bold tracking-tight" style={{ color: 'var(--text-1)' }}>
                 Annonces
@@ -481,23 +575,24 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
                 <button
                   key={cl.id}
                   onClick={() => setClasseTab(cl.id)}
-                  className="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
                   style={classeTab === cl.id
                     ? { background: '#B89B6A', color: '#FFFFFF', boxShadow: '0 4px 16px rgba(184,155,106,0.40)', border: '2px solid transparent' }
                     : { background: '#F7F3EC', color: '#5C4033', border: '2px solid rgba(184,155,106,0.25)' }
                   }>
+                  <ClassIcon type={cl.icon} className="w-4 h-4 shrink-0" />
                   {cl.label}
                 </button>
               ))}
             </div>
 
-            {/* Titre catégorie */}
+            {/* Affiche officielle de la catégorie active — remplit toute la bannière */}
             {CLASSES_MENU.filter(cl => cl.id === classeTab).map(cl => (
-              <div key={cl.id} className="mb-7">
-                <h1 className="text-[28px] font-bold tracking-tight" style={{ color: 'var(--text-1)' }}>
-                  {cl.full}
-                </h1>
-                <p className="text-sm mt-1" style={{ color: 'var(--text-3)' }}>{cl.sub}</p>
+              <div key={cl.id} className="relative overflow-hidden rounded-2xl mb-7 animate-fade-up w-full aspect-[16/9]"
+                style={{ boxShadow: '0 8px 28px rgba(140,90,60,0.10), 0 1px 3px rgba(140,90,60,0.06)' }}>
+                <img src={CAT_PHOTO[cl.id]} alt={cl.full}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy" />
               </div>
             ))}
 
@@ -662,6 +757,7 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
         )}
 
       </main>
+      </div>
     </div>
   )
 }

@@ -68,7 +68,7 @@ export default function Navbar({ userEmail, activeTab, onTabChange, onClasseChan
   const HEADER_BG = '#EADFC8'
 
   return (
-    <header className="sticky top-0 z-50"
+    <header className="sticky top-0 z-[100]"
       style={{
         background:           '#EADFC8',
         backdropFilter:       'blur(24px) saturate(1.4)',
@@ -115,7 +115,7 @@ export default function Navbar({ userEmail, activeTab, onTabChange, onClasseChan
             </button>
 
             {menuOpen && (
-              <div className="absolute top-full left-0 mt-2 w-72 rounded-2xl overflow-hidden z-50 animate-fade-up"
+              <div className="absolute top-full left-0 mt-2 w-72 rounded-2xl overflow-hidden z-[200] animate-fade-up"
                 style={{
                   background: '#F4EBDD',
                   border:     '1px solid rgba(184,155,106,0.35)',
