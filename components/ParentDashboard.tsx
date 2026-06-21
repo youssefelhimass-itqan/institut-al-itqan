@@ -32,11 +32,11 @@ type Props = {
 const INSCRIPTION_URL = 'https://forms.gle/22KxDezaptLUqKPE7'
 
 const CLASSES_MENU = [
-  { id: 'coran',              label: 'Coran',                  full: 'Classe Coran',                     sub: 'Enfants & Adultes', icon: 'book'   },
-  { id: 'al-itqan',           label: 'Arabe et Religion',     full: 'Classe Arabe et Religion',          sub: 'Enfants',           icon: 'arch'   },
-  { id: 'arabe',              label: 'Lecture Arabe',         full: 'Classe Lecture Arabe',              sub: 'Adultes',           icon: 'pen'    },
-  { id: 'sciences-islamiques',label: 'Sciences Islamiques',   full: 'Classe Sciences Islamiques',        sub: 'Adultes · Mixte',   icon: 'star'   },
-  { id: 'arabe-comprehension',label: 'Arabe et Compréhension',full: 'Classe Arabe et Compréhension',     sub: 'Adultes · Mixte',   icon: 'speech' },
+  { id: 'coran',              label: 'Coran',                  full: 'Coran',                     sub: 'Enfants & Adultes', icon: 'book'   },
+  { id: 'al-itqan',           label: 'Arabe et Religion',     full: 'Arabe et Religion',          sub: 'Enfants',           icon: 'arch'   },
+  { id: 'arabe',              label: 'Lecture Arabe',         full: 'Lecture Arabe',              sub: 'Adultes',           icon: 'pen'    },
+  { id: 'sciences-islamiques',label: 'Sciences Islamiques et Arabe débutant',   full: 'Sciences Islamiques et Arabe débutant',        sub: 'Adultes · Mixte',   icon: 'star'   },
+  { id: 'arabe-comprehension',label: 'Sciences Islamiques et Arabe intermédiaire',full: 'Sciences Islamiques et Arabe intermédiaire',     sub: 'Adultes · Mixte',   icon: 'speech' },
 ]
 
 // ── Icônes élégantes (trait fin, cohérentes) ───────────────────────────────────

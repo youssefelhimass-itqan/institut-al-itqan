@@ -72,16 +72,16 @@ const FORMULES = [
   { id: 'coran',                titre: 'Coran',                    sous: 'Enfants & Adultes', emoji: 'book', desc: 'Mémorisation du Coran, tajwîd et suivi régulier en petits groupes.', couleur: '#C4365A', bg: 'rgba(196,54,90,0.10)' },
   { id: 'arabe-religion',       titre: 'Arabe et Religion',        sous: 'Enfants',           emoji: 'arch', desc: 'Arabe fondamental, compréhension religieuse et bases solides dès le plus jeune âge.', couleur: '#3A8C62', bg: 'rgba(58,140,98,0.10)' },
   { id: 'arabe-adultes',        titre: 'Lecture Arabe',            sous: 'Adultes débutants', emoji: 'pen',  desc: 'Lecture, écriture et bases de la langue arabe — accompagnement adapté aux adultes.', couleur: '#8B6020', bg: 'rgba(139,96,32,0.10)' },
-  { id: 'sciences-islamiques',  titre: 'Sciences Islamiques',      sous: 'Adultes · Mixte',   emoji: 'book', desc: 'Cours de sciences islamiques pour adultes, hommes et femmes. Approfondissement des fondements de la religion.', couleur: '#B89B6A', bg: 'rgba(184,155,106,0.10)' },
-  { id: 'arabe-comprehension',  titre: 'Arabe et Compréhension',          sous: 'Adultes · Mixte',   emoji: 'pen',  desc: "Cours d'arabe pour adultes : apprendre la langue arabe en profondeur, la comprendre et la parler.", couleur: '#8B6020', bg: 'rgba(139,96,32,0.10)' },
+  { id: 'sciences-islamiques',  titre: 'Sciences Islamiques et Arabe débutant',      sous: 'Adultes · Mixte',   emoji: 'book', desc: 'Cours de sciences islamiques pour adultes, hommes et femmes. Approfondissement des fondements de la religion.', couleur: '#B89B6A', bg: 'rgba(184,155,106,0.10)' },
+  { id: 'arabe-comprehension',  titre: 'Sciences Islamiques et Arabe intermédiaire',          sous: 'Adultes · Mixte',   emoji: 'pen',  desc: "Cours d'arabe pour adultes : apprendre la langue arabe en profondeur, la comprendre et la parler.", couleur: '#8B6020', bg: 'rgba(139,96,32,0.10)' },
 ]
 
 const CLASSES_MENU = [
-  { id: 'coran',               full: 'Classes Coran',                 sub: 'Enfants & Adultes' },
-  { id: 'al-itqan',            full: 'Classe Arabe et Religion',      sub: 'Enfants'           },
-  { id: 'arabe',               full: 'Classes Arabe',                 sub: 'Adultes'           },
-  { id: 'sciences-islamiques', full: 'Classe Sciences Islamiques',    sub: 'Adultes · Mixte'   },
-  { id: 'arabe-comprehension', full: 'Classe Arabe et Compréhension', sub: 'Adultes · Mixte'   },
+  { id: 'coran',               full: 'Coran',                 sub: 'Enfants & Adultes' },
+  { id: 'al-itqan',            full: 'Arabe et Religion',      sub: 'Enfants'           },
+  { id: 'arabe',               full: 'Lecture Arabe',                 sub: 'Adultes'           },
+  { id: 'sciences-islamiques', full: 'Sciences Islamiques et Arabe débutant',    sub: 'Adultes · Mixte'   },
+  { id: 'arabe-comprehension', full: 'Sciences Islamiques et Arabe intermédiaire', sub: 'Adultes · Mixte'   },
 ]
 
 const NB_ELEVES = [1, 2, 3, 4, 5]

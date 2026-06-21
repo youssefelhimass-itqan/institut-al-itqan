@@ -6,11 +6,11 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 const CLASSES_MENU = [
-  { id: 'coran',               full: 'Classes Coran',                 sub: 'Enfants & Adultes' },
-  { id: 'al-itqan',            full: 'Classe Arabe et Religion',      sub: 'Enfants'           },
-  { id: 'arabe',               full: 'Classes Arabe',                 sub: 'Adultes'           },
-  { id: 'sciences-islamiques', full: 'Classe Sciences Islamiques',    sub: 'Adultes · Mixte'   },
-  { id: 'arabe-comprehension', full: 'Classe Arabe et Compréhension', sub: 'Adultes · Mixte'   },
+  { id: 'coran',               full: 'Coran',                 sub: 'Enfants & Adultes' },
+  { id: 'al-itqan',            full: 'Arabe et Religion',      sub: 'Enfants'           },
+  { id: 'arabe',               full: 'Lecture Arabe',                 sub: 'Adultes'           },
+  { id: 'sciences-islamiques', full: 'Sciences Islamiques et Arabe débutant',    sub: 'Adultes · Mixte'   },
+  { id: 'arabe-comprehension', full: 'Sciences Islamiques et Arabe intermédiaire', sub: 'Adultes · Mixte'   },
 ]
 
 type Props = {
@@ -115,7 +115,7 @@ export default function Navbar({ userEmail, activeTab, onTabChange, onClasseChan
             </button>
 
             {menuOpen && (
-              <div className="absolute top-full left-0 mt-2 w-72 rounded-2xl overflow-hidden z-[200] animate-fade-up"
+              <div className="absolute top-full left-0 mt-2 w-[22rem] rounded-2xl overflow-hidden z-[200] animate-fade-up"
                 style={{
                   background: '#F4EBDD',
                   border:     '1px solid rgba(184,155,106,0.35)',
@@ -128,7 +128,7 @@ export default function Navbar({ userEmail, activeTab, onTabChange, onClasseChan
                     style={{ borderBottom: i < CLASSES_MENU.length - 1 ? '1px solid rgba(184,155,106,0.22)' : 'none' }}
                     onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(184,155,106,0.18)'}
                     onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
-                    <p className="text-sm font-semibold whitespace-nowrap" style={{ color: '#3D2B1F' }}>
+                    <p className="text-[13.5px] font-semibold whitespace-nowrap" style={{ color: '#3D2B1F' }}>
                       {cl.full}
                     </p>
                     <p className="text-xs mt-0.5" style={{ color: '#8C6E44' }}>{cl.sub}</p>
