@@ -9,8 +9,11 @@ const CLASSES_MENU = [
   { id: 'coran',               full: 'Coran',                 sub: 'Enfants & Adultes' },
   { id: 'al-itqan',            full: 'Arabe et Religion',      sub: 'Enfants'           },
   { id: 'arabe',               full: 'Lecture Arabe',                 sub: 'Adultes'           },
-  { id: 'sciences-islamiques', full: 'Sciences Islamiques et Arabe débutant',    sub: 'Adultes · Mixte'   },
-  { id: 'arabe-comprehension', full: 'Sciences Islamiques et Arabe intermédiaire', sub: 'Adultes · Mixte'   },
+  { id: 'sciences-islamiques',           full: 'Sciences Islamiques',                     sub: 'Adultes · Mixte' },
+  { id: 'arabe-debutant',               full: 'Arabe débutant',                          sub: 'Adultes · Mixte' },
+  { id: 'sciences-islamiques-debutant', full: 'Sciences Islamiques et Arabe débutant',   sub: 'Adultes · Mixte' },
+  { id: 'cours-tajwid',                 full: 'Cours de Tajwid',                         sub: 'Adultes'         },
+  { id: 'cours-religion',               full: 'Cours de religion (Enfants / Ados)',      sub: 'Enfants / Ados'  },
 ]
 
 type Props = {

@@ -72,16 +72,22 @@ const FORMULES = [
   { id: 'coran',                titre: 'Coran',                    sous: 'Enfants & Adultes', emoji: 'book', desc: 'Mémorisation du Coran, tajwîd et suivi régulier en petits groupes.', couleur: '#C4365A', bg: 'rgba(196,54,90,0.10)' },
   { id: 'arabe-religion',       titre: 'Arabe et Religion',        sous: 'Enfants',           emoji: 'arch', desc: 'Arabe fondamental, compréhension religieuse et bases solides dès le plus jeune âge.', couleur: '#3A8C62', bg: 'rgba(58,140,98,0.10)' },
   { id: 'arabe-adultes',        titre: 'Lecture Arabe',            sous: 'Adultes débutants', emoji: 'pen',  desc: 'Lecture, écriture et bases de la langue arabe — accompagnement adapté aux adultes.', couleur: '#8B6020', bg: 'rgba(139,96,32,0.10)' },
-  { id: 'sciences-islamiques',  titre: 'Sciences Islamiques et Arabe débutant',      sous: 'Adultes · Mixte',   emoji: 'book', desc: 'Cours de sciences islamiques pour adultes, hommes et femmes. Approfondissement des fondements de la religion.', couleur: '#B89B6A', bg: 'rgba(184,155,106,0.10)' },
-  { id: 'arabe-comprehension',  titre: 'Sciences Islamiques et Arabe intermédiaire',          sous: 'Adultes · Mixte',   emoji: 'pen',  desc: "Cours d'arabe pour adultes : apprendre la langue arabe en profondeur, la comprendre et la parler.", couleur: '#8B6020', bg: 'rgba(139,96,32,0.10)' },
+  { id: 'sciences-islamiques',  titre: 'Sciences Islamiques',      sous: 'Adultes · Mixte',   emoji: 'book', desc: 'Cours de sciences islamiques pour adultes, hommes et femmes. Approfondissement des fondements de la religion.', couleur: '#B89B6A', bg: 'rgba(184,155,106,0.10)' },
+  { id: 'arabe-debutant',              titre: 'Arabe débutant',                       sous: 'Adultes · Mixte',  emoji: 'pen',  desc: "Cours d'arabe pour débutants : lecture, écriture et bases de la langue arabe.", couleur: '#8B6020', bg: 'rgba(139,96,32,0.10)' },
+  { id: 'sciences-islamiques-debutant', titre: 'Sciences Islamiques et Arabe débutant', sous: 'Adultes · Mixte',  emoji: 'star', desc: 'Cours combinant sciences islamiques et arabe pour adultes débutants.', couleur: '#B89B6A', bg: 'rgba(184,155,106,0.10)' },
+  { id: 'cours-tajwid',         titre: 'Cours de Tajwid',             sous: 'Adultes · Mixte',   emoji: 'book', desc: 'Perfectionnement de la récitation du Coran selon les règles du Tajwid.', couleur: '#B89B6A', bg: 'rgba(184,155,106,0.10)' },
+  { id: 'cours-religion',       titre: 'Cours de religion',           sous: 'Enfants / Ados',    emoji: 'arch', desc: "Cours de religion pour enfants et adolescents — deux groupes d'âge distincts.", couleur: '#8C5A3C', bg: 'rgba(140,90,60,0.10)' },
 ]
 
 const CLASSES_MENU = [
   { id: 'coran',               full: 'Coran',                 sub: 'Enfants & Adultes' },
   { id: 'al-itqan',            full: 'Arabe et Religion',      sub: 'Enfants'           },
   { id: 'arabe',               full: 'Lecture Arabe',                 sub: 'Adultes'           },
-  { id: 'sciences-islamiques', full: 'Sciences Islamiques et Arabe débutant',    sub: 'Adultes · Mixte'   },
-  { id: 'arabe-comprehension', full: 'Sciences Islamiques et Arabe intermédiaire', sub: 'Adultes · Mixte'   },
+  { id: 'sciences-islamiques', full: 'Sciences Islamiques',              sub: 'Adultes · Mixte'  },
+  { id: 'arabe-debutant',               full: 'Arabe débutant',                        sub: 'Adultes · Mixte' },
+  { id: 'sciences-islamiques-debutant', full: 'Sciences Islamiques et Arabe débutant', sub: 'Adultes · Mixte' },
+  { id: 'cours-tajwid',        full: 'Cours de Tajwid',                 sub: 'Adultes · Mixte'  },
+  { id: 'cours-religion',      full: 'Cours de religion (Enfants / Ados)', sub: 'Enfants / Ados' },
 ]
 
 const NB_ELEVES = [1, 2, 3, 4, 5]
@@ -115,18 +121,40 @@ const STRIPE_LINKS: Record<string, Record<number, { comptant: string; fois4: str
     5: { comptant: 'https://buy.stripe.com/9B64gzesMb80dbw0423sI0x', fois4: 'https://buy.stripe.com/dRm8wP4Scb809Zk4ki3sI0y' },
   },
   'sciences-islamiques': {
+    1: { comptant: 'https://buy.stripe.com/9B66oHacwb80fjE0423sI0D', fois4: 'https://buy.stripe.com/fZudR9fwQa3W5J4aIG3sI0E' },
+    2: { comptant: 'https://buy.stripe.com/9B66oHacwb80fjE0423sI0D', fois4: 'https://buy.stripe.com/fZudR9fwQa3W5J4aIG3sI0E' },
+    3: { comptant: 'https://buy.stripe.com/9B66oHacwb80fjE0423sI0D', fois4: 'https://buy.stripe.com/fZudR9fwQa3W5J4aIG3sI0E' },
+    4: { comptant: 'https://buy.stripe.com/9B66oHacwb80fjE0423sI0D', fois4: 'https://buy.stripe.com/fZudR9fwQa3W5J4aIG3sI0E' },
+    5: { comptant: 'https://buy.stripe.com/9B66oHacwb80fjE0423sI0D', fois4: 'https://buy.stripe.com/fZudR9fwQa3W5J4aIG3sI0E' },
+  },
+  'arabe-debutant': {
+    1: { comptant: 'https://buy.stripe.com/7sY28r2K40tm8Vg6sq3sI0F', fois4: 'https://buy.stripe.com/7sY9ATbgA0tm4F0cQO3sI0G' },
+    2: { comptant: 'https://buy.stripe.com/7sY28r2K40tm8Vg6sq3sI0F', fois4: 'https://buy.stripe.com/7sY9ATbgA0tm4F0cQO3sI0G' },
+    3: { comptant: 'https://buy.stripe.com/7sY28r2K40tm8Vg6sq3sI0F', fois4: 'https://buy.stripe.com/7sY9ATbgA0tm4F0cQO3sI0G' },
+    4: { comptant: 'https://buy.stripe.com/7sY28r2K40tm8Vg6sq3sI0F', fois4: 'https://buy.stripe.com/7sY9ATbgA0tm4F0cQO3sI0G' },
+    5: { comptant: 'https://buy.stripe.com/7sY28r2K40tm8Vg6sq3sI0F', fois4: 'https://buy.stripe.com/7sY9ATbgA0tm4F0cQO3sI0G' },
+  },
+  'sciences-islamiques-debutant': {
     1: { comptant: 'https://buy.stripe.com/eVq3cvbgA5NG3AW1863sI0z', fois4: 'https://buy.stripe.com/14A9AT98s6RK9Zk4ki3sI0A' },
     2: { comptant: 'https://buy.stripe.com/eVq3cvbgA5NG3AW1863sI0z', fois4: 'https://buy.stripe.com/14A9AT98s6RK9Zk4ki3sI0A' },
     3: { comptant: 'https://buy.stripe.com/eVq3cvbgA5NG3AW1863sI0z', fois4: 'https://buy.stripe.com/14A9AT98s6RK9Zk4ki3sI0A' },
     4: { comptant: 'https://buy.stripe.com/eVq3cvbgA5NG3AW1863sI0z', fois4: 'https://buy.stripe.com/14A9AT98s6RK9Zk4ki3sI0A' },
     5: { comptant: 'https://buy.stripe.com/eVq3cvbgA5NG3AW1863sI0z', fois4: 'https://buy.stripe.com/14A9AT98s6RK9Zk4ki3sI0A' },
   },
-  'arabe-comprehension': {
-    1: { comptant: 'https://buy.stripe.com/dRmfZhckE2Bub3o8Ay3sI0B', fois4: 'https://buy.stripe.com/6oUcN54Sca3W0oKg303sI0C' },
-    2: { comptant: 'https://buy.stripe.com/dRmfZhckE2Bub3o8Ay3sI0B', fois4: 'https://buy.stripe.com/6oUcN54Sca3W0oKg303sI0C' },
-    3: { comptant: 'https://buy.stripe.com/dRmfZhckE2Bub3o8Ay3sI0B', fois4: 'https://buy.stripe.com/6oUcN54Sca3W0oKg303sI0C' },
-    4: { comptant: 'https://buy.stripe.com/dRmfZhckE2Bub3o8Ay3sI0B', fois4: 'https://buy.stripe.com/6oUcN54Sca3W0oKg303sI0C' },
-    5: { comptant: 'https://buy.stripe.com/dRmfZhckE2Bub3o8Ay3sI0B', fois4: 'https://buy.stripe.com/6oUcN54Sca3W0oKg303sI0C' },
+  // cours-tajwid et cours-religion — liens Stripe à renseigner
+  'cours-tajwid': {
+    1: { comptant: '', fois4: '' },
+    2: { comptant: '', fois4: '' },
+    3: { comptant: '', fois4: '' },
+    4: { comptant: '', fois4: '' },
+    5: { comptant: '', fois4: '' },
+  },
+  'cours-religion': {
+    1: { comptant: '', fois4: '' },
+    2: { comptant: '', fois4: '' },
+    3: { comptant: '', fois4: '' },
+    4: { comptant: '', fois4: '' },
+    5: { comptant: '', fois4: '' },
   },
 }
 
@@ -134,7 +162,17 @@ const fmt = (n: number) =>
   n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
 
 // Classes sans sélection du nombre d'élèves (lien Stripe unique, choix sur Stripe)
-const FLAT_PRICE_CLASSES = ['sciences-islamiques', 'arabe-comprehension']
+const FLAT_PRICE_CLASSES = ['sciences-islamiques', 'arabe-debutant', 'sciences-islamiques-debutant']
+// Classes sans paiement sur la plateforme (tarif communiqué directement)
+const NO_PAYMENT_CLASSES  = ['cours-tajwid', 'cours-religion']
+
+// Prix fixes par formule (écrasent le calcul dynamique BASE × n)
+// { comptant: total en une fois, fois4: mensualité × 4 }
+const PRIX_FIXES: Record<string, { comptant: number; fois4: number }> = {
+  'sciences-islamiques':           { comptant: 156, fois4: 39 },
+  'arabe-debutant':                { comptant: 156, fois4: 39 },
+  'sciences-islamiques-debutant':  { comptant: 276, fois4: 69 },
+}
 
 export default function InscriptionClient({ userEmail }: { userEmail: string }) {
   const router   = useRouter()
@@ -149,14 +187,16 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
   const [payError, setPayError] = useState('')
   const [step,     setStep]     = useState<1 | 2 | 3>(1)
 
-  const totalAnnuel  = calcTotal(nbEleves)
+  const prixFixe     = formule ? PRIX_FIXES[formule] : null
+  const totalAnnuel  = prixFixe ? prixFixe.comptant : calcTotal(nbEleves)
   const sansRemise   = calcSansRemise(nbEleves)
   const economie     = calcEconomie(nbEleves)
-  const montant     = mode === "fois4" ? calcFois4(nbEleves) : totalAnnuel
+  const montantFois4 = prixFixe ? prixFixe.fois4 : Math.round((totalAnnuel / 4) * 100) / 100
+  const montant     = mode === "fois4" ? montantFois4 : totalAnnuel
   const formuleDef  = FORMULES.find(f => f.id === formule)
   const hasRemise    = nbEleves > 1
   const canNext1    = !!formule
-  const canPay      = !!formule
+  const canPay      = !!formule && !NO_PAYMENT_CLASSES.includes(formule ?? '')
 
   // ── Styles nav (identiques à ParentDashboard) ──────────────────────────
   const navItemStyle = (active: boolean) => ({
@@ -215,7 +255,7 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
               Quelle formule vous intéresse ?
             </p>
 
-            {FORMULES.map(f => (
+            {FORMULES.filter(f => !['cours-tajwid','cours-religion'].includes(f.id)).map(f => (
               <button key={f.id} onClick={() => setFormule(f.id)}
                 className="w-full text-left rounded-2xl overflow-hidden transition-all duration-200 glass glass-hover"
                 style={{
@@ -238,9 +278,11 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
                     <p className="text-sm mt-1 leading-relaxed" style={{ color: 'var(--text-2)' }}>{f.desc}</p>
                     <div className="mt-2">
                       <p className="text-lg font-bold leading-none" style={{ color: f.couleur }}>
-                        69,00 € <span className="font-bold">× 4</span>
+                        {fmt(PRIX_FIXES[f.id]?.fois4 ?? 69)} <span className="font-bold">× 4</span>
                       </p>
-                      <p className="text-xs mt-1" style={{ color: 'var(--text-3)' }}>276,00 € en une fois</p>
+                      <p className="text-xs mt-1" style={{ color: 'var(--text-3)' }}>
+                        {fmt(PRIX_FIXES[f.id]?.comptant ?? 276)} en une fois
+                      </p>
                     </div>
                   </div>
                   <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all"
@@ -415,13 +457,35 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
         {/* ── Étape 3 — Mode de paiement + récap ──────────────────────── */}
         {step === 3 && (
           <div className="animate-fade-up space-y-6">
+
+            {/* ── Classes sans paiement en ligne ── */}
+            {formule && NO_PAYMENT_CLASSES.includes(formule) ? (
+              <div className="rounded-2xl p-7 text-center"
+                style={{ background: 'var(--bg-surface)', border: '1.5px solid rgba(184,155,106,0.3)' }}>
+                <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+                  style={{ background: 'rgba(184,155,106,0.12)' }}>
+                  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#B89B6A' }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6}
+                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </div>
+                <p className="text-base font-semibold mb-2" style={{ color: 'var(--text-1)' }}>
+                  Inscription sur contact direct
+                </p>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-3)' }}>
+                  Le paiement pour ce cours se fait directement auprès de l'institut.<br />
+                  Veuillez nous contacter pour finaliser votre inscription.
+                </p>
+              </div>
+            ) : (
+              <>
             <p className="text-base font-semibold mb-5" style={{ color: 'var(--text-1)' }}>
               Choisissez votre mode de paiement
             </p>
 
             <div className="grid sm:grid-cols-2 gap-4">
               {MODES.map(m => {
-                const montantMode = m.id === 'fois4' ? calcFois4(nbEleves) : totalAnnuel
+                const montantMode = m.id === 'fois4' ? montantFois4 : totalAnnuel
                 return (
                   <button key={m.id} onClick={() => setMode(m.id as 'comptant' | 'fois4')}
                     className="text-left rounded-2xl p-5 transition-all duration-200 glass glass-hover"
@@ -461,7 +525,7 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
                               {fmt(montantMode)}
                             </p>
                             <p className="text-xs mt-1" style={{ color: 'var(--text-3)' }}>
-                              ou {fmt(calcFois4(nbEleves))} × 4 versements
+                              ou {fmt(montantFois4)} × 4 versements
                             </p>
                           </div>
                         )}
@@ -559,8 +623,11 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
                       Détail par élève
                     </p>
                     {Array.from({ length: nbEleves }).map((_, idx) => {
-                      const prixFinal   = idx === 0 ? BASE : idx === 1 ? P2 : P3
-                      const hasDiscount = idx >= 1
+                      const baseUnitaire = prixFixe ? prixFixe.comptant : BASE
+                      const p2Fix        = prixFixe ? prixFixe.comptant * 0.90 : P2
+                      const p3Fix        = prixFixe ? prixFixe.comptant * 0.50 : P3
+                      const prixFinal   = idx === 0 ? baseUnitaire : idx === 1 ? p2Fix : p3Fix
+                      const hasDiscount = idx >= 1 && !prixFixe
                       const discLabel   = idx === 1 ? '-10 %' : '-50 %'
                       const ordinal     = idx === 0 ? '1er élève' : `${idx + 1}e élève`
                       return (
@@ -574,7 +641,7 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
                           </div>
                           <div className="flex items-center gap-2">
                             {hasDiscount && (
-                              <p className="text-xs line-through" style={{ color: '#9CA3AF' }}>{fmt(BASE)}</p>
+                              <p className="text-xs line-through" style={{ color: '#9CA3AF' }}>{fmt(baseUnitaire)}</p>
                             )}
                             <p className="text-sm font-bold" style={{ color: hasDiscount && nbEleves >= 2 ? '#E74C3C' : 'var(--text-1)' }}>
                               {fmt(prixFinal)}
@@ -594,7 +661,7 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
                       {mode === 'fois4' ? (
                         <>
                           <p className="font-bold leading-none" style={{ color: nbEleves >= 2 ? '#E74C3C' : 'var(--accent)', fontSize: '1.6rem' }}>
-                            {fmt(calcFois4(nbEleves))}{' '}<span style={{ fontSize: '1.2rem' }}>× 4</span>
+                            {fmt(montantFois4)}{' '}<span style={{ fontSize: '1.2rem' }}>× 4</span>
                           </p>
                           <p className="text-xs mt-1" style={{ color: 'var(--text-3)' }}>
                             {fmt(totalAnnuel)} en une fois
@@ -606,7 +673,7 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
                             {fmt(totalAnnuel)}
                           </p>
                           <p className="text-xs mt-1" style={{ color: 'var(--text-3)' }}>
-                            ou {fmt(calcFois4(nbEleves))} × 4 versements
+                            ou {fmt(montantFois4)} × 4 versements
                           </p>
                         </>
                       )}
@@ -691,6 +758,8 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
                 Paiement sécurisé — vous serez redirigé vers Stripe
               </p>
             </div>
+              </>
+            )}
 
             <div className="flex justify-start">
               <button
