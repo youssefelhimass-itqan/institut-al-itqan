@@ -305,7 +305,7 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
       </div>
 
       {/* ══ HEADER ════════════════════════════════════════════════════════ */}
-      <div className="relative z-[100]">
+      <div>
       <Navbar
         userEmail={user.email}
         activeTab={tab}

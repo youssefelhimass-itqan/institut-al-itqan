@@ -211,24 +211,36 @@ export default function Navbar({ userEmail, activeTab, onTabChange, onClasseChan
         <div className="overflow-x-auto hide-scrollbar"
           style={{ borderTop: '1px solid rgba(74,53,32,0.12)' }}>
           <div className="flex items-center px-4 pb-3 pt-2 gap-1 min-w-max">
-            {[
-              { id: 'annonces',   label: 'Annonces'          },
-              { id: 'classes',    label: 'Classes'           },
-              { id: 'calendrier', label: 'Calendrier'        },
-              { id: 'invitation', label: 'Inviter un proche' },
-              { id: 'reglement',  label: 'Règlement'         },
-            ].map(item => (
-              <button key={item.id} onClick={() => handleTab(item.id)}
-                className={`px-3.5 py-2 rounded-xl text-[13px] font-medium whitespace-nowrap transition-all duration-200 ${isActive(item.id) ? 'nav-tab-active' : ''}`}
-                style={{ color: isActive(item.id) ? '#3D2B1F' : '#6B4C35' }}>
-                {item.label}
-              </button>
-            ))}
+            <button onClick={() => handleTab('annonces')}
+              className={`px-3.5 py-2 rounded-xl text-[13px] font-medium whitespace-nowrap transition-all duration-200 ${isActive('annonces') ? 'nav-tab-active' : ''}`}
+              style={{ color: isActive('annonces') ? '#3D2B1F' : '#6B4C35' }}>
+              Annonces
+            </button>
+            <button onClick={() => handleTab('classes')}
+              className={`px-3.5 py-2 rounded-xl text-[13px] font-medium whitespace-nowrap transition-all duration-200 ${isActive('classes') ? 'nav-tab-active' : ''}`}
+              style={{ color: isActive('classes') ? '#3D2B1F' : '#6B4C35' }}>
+              Classes
+            </button>
             <Link href="/inscription"
               className={`px-3.5 py-2 rounded-xl text-[13px] font-medium whitespace-nowrap transition-all duration-200 ${isActive('sinscrire') ? 'nav-tab-active' : ''}`}
               style={{ color: isActive('sinscrire') ? '#3D2B1F' : '#6B4C35' }}>
               S'inscrire
             </Link>
+            <button onClick={() => handleTab('calendrier')}
+              className={`px-3.5 py-2 rounded-xl text-[13px] font-medium whitespace-nowrap transition-all duration-200 ${isActive('calendrier') ? 'nav-tab-active' : ''}`}
+              style={{ color: isActive('calendrier') ? '#3D2B1F' : '#6B4C35' }}>
+              Calendrier
+            </button>
+            <button onClick={() => handleTab('invitation')}
+              className={`px-3.5 py-2 rounded-xl text-[13px] font-medium whitespace-nowrap transition-all duration-200 ${isActive('invitation') ? 'nav-tab-active' : ''}`}
+              style={{ color: isActive('invitation') ? '#3D2B1F' : '#6B4C35' }}>
+              Inviter un proche
+            </button>
+            <button onClick={() => handleTab('reglement')}
+              className={`px-3.5 py-2 rounded-xl text-[13px] font-medium whitespace-nowrap transition-all duration-200 ${isActive('reglement') ? 'nav-tab-active' : ''}`}
+              style={{ color: isActive('reglement') ? '#3D2B1F' : '#6B4C35' }}>
+              Règlement
+            </button>
           </div>
         </div>
       </div>
