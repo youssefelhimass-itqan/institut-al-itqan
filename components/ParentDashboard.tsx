@@ -34,12 +34,9 @@ const INSCRIPTION_URL = 'https://forms.gle/22KxDezaptLUqKPE7'
 const CLASSES_MENU = [
   { id: 'coran',              label: 'Coran',                  full: 'Coran',                     sub: 'Enfants & Adultes', icon: 'book'   },
   { id: 'al-itqan',           label: 'Arabe et Religion',     full: 'Arabe et Religion',          sub: 'Enfants',           icon: 'arch'   },
-  { id: 'arabe',              label: 'Lecture Arabe',         full: 'Lecture Arabe',              sub: 'Adultes',           icon: 'pen'    },
-  { id: 'sciences-islamiques',           label: 'Sciences Islamiques',                      full: 'Sciences Islamiques',                     sub: 'Adultes · Mixte',  icon: 'star'   },
-  { id: 'arabe-debutant',               label: 'Arabe débutant',                           full: 'Arabe débutant',                          sub: 'Adultes · Mixte',  icon: 'pen'    },
-  { id: 'sciences-islamiques-debutant', label: 'Sciences Islamiques et Arabe débutant',    full: 'Sciences Islamiques et Arabe débutant',    sub: 'Adultes · Mixte',  icon: 'star'   },
-  { id: 'cours-tajwid',                 label: 'Cours de Tajwid',                          full: 'Cours de Tajwid',                         sub: 'Adultes',          icon: 'book'   },
-  { id: 'cours-religion',               label: 'Cours de religion',                        full: 'Cours de religion (Enfants / Ados)',       sub: 'Enfants / Ados',   icon: 'arch'   },
+  { id: 'sciences-islamiques',label: 'Sciences Islamiques',   full: 'Sciences Islamiques',        sub: 'Adultes · Mixte',  icon: 'star'   },
+  { id: 'cours-tajwid',       label: 'Cours de Tajwid',       full: 'Cours de Tajwid',            sub: 'Adultes',          icon: 'book'   },
+  { id: 'cours-religion',     label: 'Cours de religion',     full: 'Cours de religion (Enfants / Ados)', sub: 'Enfants / Ados', icon: 'arch' },
 ]
 
 // ── Icônes élégantes (trait fin, cohérentes) ───────────────────────────────────
@@ -60,8 +57,6 @@ const CAT_COLOR: Record<string, string> = {
   'al-itqan':           '#B89B6A',
   arabe:                '#B89B6A',
   'sciences-islamiques':'#B89B6A',
-  'arabe-debutant':                '#B89B6A',
-  'sciences-islamiques-debutant':    '#B89B6A',
   'cours-tajwid':       '#B89B6A',
   'cours-religion':     '#B89B6A',
 }
@@ -71,8 +66,6 @@ const CAT_BG: Record<string, string> = {
   'al-itqan':           'rgba(184,155,106,0.08)',
   arabe:                'rgba(184,155,106,0.08)',
   'sciences-islamiques':'rgba(184,155,106,0.08)',
-  'arabe-debutant':                'rgba(184,155,106,0.08)',
-  'sciences-islamiques-debutant':    'rgba(184,155,106,0.08)',
   'cours-tajwid':       'rgba(184,155,106,0.08)',
   'cours-religion':     'rgba(184,155,106,0.08)',
 }
@@ -120,8 +113,6 @@ const CAT_PHOTO: Record<string, string> = {
   'al-itqan':                       '/images/arabe-religion.jpeg',
   arabe:                            '/images/lecture-arabe.jpeg',
   'sciences-islamiques':            '/images/sciences-islamiques-2.jpeg',
-  'arabe-debutant':                 '/images/arabe-debutant.jpeg',
-  'sciences-islamiques-debutant':   '/images/sciences-islamiques.jpeg',
   'cours-tajwid':                   '/images/cours-tajwid.jpeg',
   'cours-religion':                 '/images/cours-religion.jpeg',
 }
@@ -132,8 +123,6 @@ const CAT_IMG_BG: Record<string, string> = {
   'al-itqan':           '#F4EBDD',
   arabe:                '#F4EBDD',
   'sciences-islamiques':'#F4EBDD',
-  'arabe-debutant':                '#F4EBDD',
-  'sciences-islamiques-debutant':    '#F4EBDD',
   'cours-tajwid':       '#F4EBDD',
   'cours-religion':     '#F4EBDD',
 }
@@ -292,8 +281,17 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
 
   const goTo = (t: string) => { setTab(t); setMenuOpen(false) }
 
+  // Convertit "14h–15h", "19h30–20h30", etc. en minutes depuis minuit pour tri chronologique
+  const heureEnMinutes = (horaire: string) => {
+    const part = horaire.split('–')[0]?.trim() ?? '0h'
+    const [h, m] = part.replace('h', ':').split(':').map(Number)
+    return (h || 0) * 60 + (m || 0)
+  }
+
   const groupesByCategorie = (cat: string) =>
-    groupes.filter(g => g.categorie === cat).sort((a, b) => a.ordre - b.ordre)
+    groupes
+      .filter(g => g.categorie === cat)
+      .sort((a, b) => heureEnMinutes(a.horaire) - heureEnMinutes(b.horaire))
 
   // ─── Rendu ─────────────────────────────────────────────────────────────
   return (

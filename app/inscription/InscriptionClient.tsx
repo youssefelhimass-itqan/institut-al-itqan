@@ -73,8 +73,8 @@ const FORMULES = [
   { id: 'arabe-religion',       titre: 'Arabe et Religion',        sous: 'Enfants',           emoji: 'arch', desc: 'Arabe fondamental, compréhension religieuse et bases solides dès le plus jeune âge.', couleur: '#3A8C62', bg: 'rgba(58,140,98,0.10)' },
   { id: 'arabe-adultes',        titre: 'Lecture Arabe',            sous: 'Adultes débutants', emoji: 'pen',  desc: 'Lecture, écriture et bases de la langue arabe — accompagnement adapté aux adultes.', couleur: '#8B6020', bg: 'rgba(139,96,32,0.10)' },
   { id: 'sciences-islamiques',  titre: 'Sciences Islamiques',      sous: 'Adultes · Mixte',   emoji: 'book', desc: 'Cours de sciences islamiques pour adultes, hommes et femmes. Approfondissement des fondements de la religion.', couleur: '#B89B6A', bg: 'rgba(184,155,106,0.10)' },
-  { id: 'arabe-debutant',              titre: 'Arabe débutant',                       sous: 'Adultes · Mixte',  emoji: 'pen',  desc: "Cours d'arabe pour débutants : lecture, écriture et bases de la langue arabe.", couleur: '#8B6020', bg: 'rgba(139,96,32,0.10)' },
-  { id: 'sciences-islamiques-debutant', titre: 'Sciences Islamiques et Arabe débutant', sous: 'Adultes · Mixte',  emoji: 'star', desc: 'Cours combinant sciences islamiques et arabe pour adultes débutants.', couleur: '#B89B6A', bg: 'rgba(184,155,106,0.10)' },
+  
+  
   { id: 'cours-tajwid',         titre: 'Cours de Tajwid',             sous: 'Adultes · Mixte',   emoji: 'book', desc: 'Perfectionnement de la récitation du Coran selon les règles du Tajwid.', couleur: '#B89B6A', bg: 'rgba(184,155,106,0.10)' },
   { id: 'cours-religion',       titre: 'Cours de religion',           sous: 'Enfants / Ados',    emoji: 'arch', desc: "Cours de religion pour enfants et adolescents — deux groupes d'âge distincts.", couleur: '#8C5A3C', bg: 'rgba(140,90,60,0.10)' },
 ]
@@ -82,10 +82,10 @@ const FORMULES = [
 const CLASSES_MENU = [
   { id: 'coran',               full: 'Coran',                 sub: 'Enfants & Adultes' },
   { id: 'al-itqan',            full: 'Arabe et Religion',      sub: 'Enfants'           },
-  { id: 'arabe',               full: 'Lecture Arabe',                 sub: 'Adultes'           },
+  
   { id: 'sciences-islamiques', full: 'Sciences Islamiques',              sub: 'Adultes · Mixte'  },
-  { id: 'arabe-debutant',               full: 'Arabe débutant',                        sub: 'Adultes · Mixte' },
-  { id: 'sciences-islamiques-debutant', full: 'Sciences Islamiques et Arabe débutant', sub: 'Adultes · Mixte' },
+  
+  
   { id: 'cours-tajwid',        full: 'Cours de Tajwid',                 sub: 'Adultes · Mixte'  },
   { id: 'cours-religion',      full: 'Cours de religion (Enfants / Ados)', sub: 'Enfants / Ados' },
 ]
@@ -127,20 +127,6 @@ const STRIPE_LINKS: Record<string, Record<number, { comptant: string; fois4: str
     4: { comptant: 'https://buy.stripe.com/9B66oHacwb80fjE0423sI0D', fois4: 'https://buy.stripe.com/fZudR9fwQa3W5J4aIG3sI0E' },
     5: { comptant: 'https://buy.stripe.com/9B66oHacwb80fjE0423sI0D', fois4: 'https://buy.stripe.com/fZudR9fwQa3W5J4aIG3sI0E' },
   },
-  'arabe-debutant': {
-    1: { comptant: 'https://buy.stripe.com/7sY28r2K40tm8Vg6sq3sI0F', fois4: 'https://buy.stripe.com/7sY9ATbgA0tm4F0cQO3sI0G' },
-    2: { comptant: 'https://buy.stripe.com/7sY28r2K40tm8Vg6sq3sI0F', fois4: 'https://buy.stripe.com/7sY9ATbgA0tm4F0cQO3sI0G' },
-    3: { comptant: 'https://buy.stripe.com/7sY28r2K40tm8Vg6sq3sI0F', fois4: 'https://buy.stripe.com/7sY9ATbgA0tm4F0cQO3sI0G' },
-    4: { comptant: 'https://buy.stripe.com/7sY28r2K40tm8Vg6sq3sI0F', fois4: 'https://buy.stripe.com/7sY9ATbgA0tm4F0cQO3sI0G' },
-    5: { comptant: 'https://buy.stripe.com/7sY28r2K40tm8Vg6sq3sI0F', fois4: 'https://buy.stripe.com/7sY9ATbgA0tm4F0cQO3sI0G' },
-  },
-  'sciences-islamiques-debutant': {
-    1: { comptant: 'https://buy.stripe.com/eVq3cvbgA5NG3AW1863sI0z', fois4: 'https://buy.stripe.com/14A9AT98s6RK9Zk4ki3sI0A' },
-    2: { comptant: 'https://buy.stripe.com/eVq3cvbgA5NG3AW1863sI0z', fois4: 'https://buy.stripe.com/14A9AT98s6RK9Zk4ki3sI0A' },
-    3: { comptant: 'https://buy.stripe.com/eVq3cvbgA5NG3AW1863sI0z', fois4: 'https://buy.stripe.com/14A9AT98s6RK9Zk4ki3sI0A' },
-    4: { comptant: 'https://buy.stripe.com/eVq3cvbgA5NG3AW1863sI0z', fois4: 'https://buy.stripe.com/14A9AT98s6RK9Zk4ki3sI0A' },
-    5: { comptant: 'https://buy.stripe.com/eVq3cvbgA5NG3AW1863sI0z', fois4: 'https://buy.stripe.com/14A9AT98s6RK9Zk4ki3sI0A' },
-  },
   // cours-tajwid et cours-religion — liens Stripe à renseigner
   'cours-tajwid': {
     1: { comptant: '', fois4: '' },
@@ -162,7 +148,7 @@ const fmt = (n: number) =>
   n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
 
 // Classes sans sélection du nombre d'élèves (lien Stripe unique, choix sur Stripe)
-const FLAT_PRICE_CLASSES = ['sciences-islamiques', 'arabe-debutant', 'sciences-islamiques-debutant']
+const FLAT_PRICE_CLASSES = ['sciences-islamiques']
 // Classes sans paiement sur la plateforme (tarif communiqué directement)
 const NO_PAYMENT_CLASSES  = ['cours-tajwid', 'cours-religion']
 
@@ -170,8 +156,6 @@ const NO_PAYMENT_CLASSES  = ['cours-tajwid', 'cours-religion']
 // { comptant: total en une fois, fois4: mensualité × 4 }
 const PRIX_FIXES: Record<string, { comptant: number; fois4: number }> = {
   'sciences-islamiques':           { comptant: 156, fois4: 39 },
-  'arabe-debutant':                { comptant: 156, fois4: 39 },
-  'sciences-islamiques-debutant':  { comptant: 276, fois4: 69 },
 }
 
 export default function InscriptionClient({ userEmail }: { userEmail: string }) {
