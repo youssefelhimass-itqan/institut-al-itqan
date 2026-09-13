@@ -195,6 +195,7 @@ export async function POST(req: NextRequest) {
   const PAYMENT_LINK_PRICE_IDS = new Set([
     'price_1Tgv5YGc0wtxjNeQJBI3KIZP', // Sciences Islamiques — 4 fois (69 €/mois)
     'price_1TgvGuGc0wtxjNeQ3NIHq0t2', // Arabe et Compréhension — 4 fois (69 €/mois)
+    'price_1TnmEpGc0wtxjNeQPEvh2BsL', // Sciences Islamiques seule — 4 fois (39 €/mois)
   ])
 
   if (event.type === 'customer.subscription.created') {
