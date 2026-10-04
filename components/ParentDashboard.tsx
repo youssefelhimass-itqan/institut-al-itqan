@@ -204,7 +204,7 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
       .from('groupe_documents')
       .select('*')
       .eq('groupe_id', gid)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: true })
     setGroupeDocs(prev => ({ ...prev, [gid]: data ?? [] }))
   }, [groupeDocs, supabase])
 
