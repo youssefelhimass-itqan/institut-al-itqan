@@ -219,6 +219,11 @@ export default function ParentDashboard({ user, annonces, horaires, documents }:
   const resolveUrl = async (path: string, bucket: string, id: string, nom?: string): Promise<string | null> => {
     console.log(`[dl] nom:"${nom ?? ''}" bucket:"${bucket}" path:"${path}"`)
 
+// Lien externe (YouTube, Drive, etc.) — ouvrir directement
+if (path.startsWith('http://') || path.startsWith('https://')) {
+  return path
+}
+
     // Tentative 1 — URL signée (chemin exact)
     const { data: d1, error: e1 } = await supabase.storage.from(bucket).createSignedUrl(path, 3600)
     if (!e1 && d1?.signedUrl) {
