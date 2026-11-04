@@ -1,0 +1,360 @@
+-- ============================================================
+-- TESTS — Institut Al-Itqan v8
+--
+-- Exécuter dans Supabase > SQL Editor APRÈS Phase B.
+--
+-- Le SQL Editor utilise service_role (bypass RLS).
+-- BLOC A : vérifications de configuration (SQL Editor)
+-- BLOC B : test trigger (SQL Editor, avec ROLLBACK auto)
+-- BLOC C : tests comportementaux (via l'application web ou Postman)
+--
+-- TESTS CRITIQUES v8 :
+--   • A11-A14 : REVOKE/GRANT sur groupes et groupes_public
+--   • C2g : /rest/v1/groupes?select=zoom_link avec JWT parent bloqué
+--   • C2h : /rest/v1/groupes_public?select=zoom_link (colonne absente)
+-- ============================================================
+
+
+-- ════════════════════════════════════════════════════════════
+-- BLOC A : Configuration — SQL Editor (service_role)
+-- ════════════════════════════════════════════════════════════
+
+-- A1. Fonctions SECURITY DEFINER présentes
+SELECT routine_name, security_type
+FROM information_schema.routines
+WHERE routine_schema = 'public'
+  AND routine_name IN ('get_my_role', 'get_my_acces_cours')
+ORDER BY routine_name;
+-- Attendu : 2 lignes, security_type = DEFINER
+
+-- A2. RLS activée sur les tables concernées
+SELECT relname, relrowsecurity
+FROM pg_class
+WHERE relnamespace = 'public'::regnamespace
+  AND relname IN ('profiles', 'groupes', 'groupe_documents', 'groupe_acces');
+-- Attendu : toutes à relrowsecurity = true (sauf groupes si pas de ENABLE RLS)
+-- Note : groupes est protégé par REVOKE, pas par RLS directe
+
+-- A3. Politiques sur groupe_documents
+SELECT policyname, cmd, roles, qual
+FROM pg_policies
+WHERE schemaname = 'public' AND tablename = 'groupe_documents'
+ORDER BY policyname;
+-- Attendu :
+--   "groupe_documents_admin_all"     — ALL    — authenticated
+--   "groupe_documents_parent_select" — SELECT — authenticated
+-- ⚠️  "Lire groupe_documents" NE DOIT PAS apparaître
+
+-- A4. Aucune politique USING(true) sur groupe_documents
+SELECT policyname FROM pg_policies
+WHERE schemaname = 'public' AND tablename = 'groupe_documents'
+  AND qual = 'true';
+-- Attendu : 0 lignes
+
+-- A5. Politiques Storage
+SELECT policyname, cmd FROM pg_policies
+WHERE schemaname = 'storage' AND tablename = 'objects'
+ORDER BY policyname;
+-- Attendu après Phase B :
+--   "groupe_docs_acces_cours_select" — SELECT
+--   "groupe_docs_admin_delete"        — DELETE
+--   "groupe_docs_admin_insert"        — INSERT
+--   "groupe_docs_admin_update"        — UPDATE
+-- ⚠️  "Connectés lisent groupe-docs" NE DOIT PAS apparaître
+
+-- A6. Politiques sur profiles
+SELECT policyname, cmd, roles FROM pg_policies
+WHERE schemaname = 'public' AND tablename = 'profiles'
+ORDER BY policyname;
+-- Attendu : "Profil personnel" + "profiles_admin_select" + "profiles_admin_update"
+
+-- A7. Politiques sur groupe_acces
+SELECT policyname, cmd, roles FROM pg_policies
+WHERE schemaname = 'public' AND tablename = 'groupe_acces'
+ORDER BY policyname;
+-- Attendu : "Lecture groupe_acces autorisee" (et éventuellement politique admin)
+
+-- A8. 23 lignes dans groupe_acces
+SELECT COUNT(*) FROM public.groupe_acces;
+-- Attendu : 23
+
+-- A9. Parents avec acces_cours = true (aucun perdu)
+SELECT
+  role,
+  COUNT(*) FILTER (WHERE acces_cours = true)  AS avec_acces,
+  COUNT(*) FILTER (WHERE acces_cours = false) AS sans_acces,
+  COUNT(*) FILTER (WHERE acces_cours IS NULL) AS acces_null,
+  COUNT(*)                                     AS total
+FROM public.profiles
+GROUP BY role ORDER BY role;
+-- Attendu : parents avec_acces = nombre_initial, sans_acces = 0
+
+-- A10. Statut du bucket groupe-docs
+SELECT id, name, public AS est_public FROM storage.buckets WHERE id = 'groupe-docs';
+-- Attendu avant Phase C : est_public = true (acceptable temporairement)
+-- Attendu après Phase C : est_public = false
+
+-- A11. ⭐ CRITIQUE v8 — Droits révoqués sur la TABLE groupes
+SELECT grantee, privilege_type
+FROM information_schema.role_table_grants
+WHERE table_schema = 'public' AND table_name = 'groupes'
+  AND grantee IN ('anon', 'authenticated')
+ORDER BY grantee;
+-- Attendu : 0 lignes (anon et authenticated révoqués)
+-- ⚠️  Si des lignes apparaissent : Phase B incomplète, /rest/v1/groupes reste accessible
+
+-- A12. ⭐ CRITIQUE v8 — Vue groupes_public présente et sans zoom_link
+SELECT column_name FROM information_schema.columns
+WHERE table_schema = 'public' AND table_name = 'groupes_public'
+ORDER BY ordinal_position;
+-- Attendu : id, categorie, jour, horaire, ordre  (PAS zoom_link, PAS devoirs)
+
+-- A13. Droits GRANT sur la vue groupes_public
+SELECT grantee, privilege_type
+FROM information_schema.role_table_grants
+WHERE table_schema = 'public' AND table_name = 'groupes_public'
+  AND grantee IN ('anon', 'authenticated')
+ORDER BY grantee;
+-- Attendu : anon=SELECT, authenticated=SELECT
+
+-- A14. Sauvegarde vérifiable : cohérence groupe_acces vs groupes
+SELECT
+  COUNT(*)                                                              AS total_groupes,
+  COUNT(ga.groupe_id)                                                   AS groupes_dans_acces,
+  COUNT(*) FILTER (WHERE g.zoom_link IS NOT NULL AND ga.zoom_link IS NULL) AS zoom_manquant,
+  COUNT(*) FILTER (WHERE g.devoirs IS NOT NULL AND ga.devoirs IS NULL)     AS devoirs_manquant
+FROM public.groupes g
+LEFT JOIN public.groupe_acces ga ON ga.groupe_id = g.id;
+-- Attendu : total_groupes = groupes_dans_acces, zoom_manquant = 0, devoirs_manquant = 0
+
+-- A15. Documents généraux (table public.documents) — vérification manuelle
+SELECT nom, storage_path, created_at FROM public.documents ORDER BY created_at DESC;
+-- Vérifier visuellement qu'aucun document pédagogique n'est ici.
+
+
+-- ════════════════════════════════════════════════════════════
+-- BLOC B : Test trigger (rollback automatique)
+-- ════════════════════════════════════════════════════════════
+
+BEGIN;
+  INSERT INTO public.profiles (id, email, role, acces_cours)
+  VALUES (
+    '00000000-0000-0000-0000-000000000099',
+    'test-trigger@test.local',
+    'parent',
+    true   -- le trigger doit forcer false
+  );
+  SELECT id, email, role, acces_cours AS doit_etre_false
+  FROM public.profiles
+  WHERE id = '00000000-0000-0000-0000-000000000099';
+ROLLBACK;
+-- Attendu : acces_cours = false dans le SELECT
+-- ROLLBACK annule l'INSERT — aucun profil créé.
+
+
+-- ════════════════════════════════════════════════════════════
+-- BLOC C : Tests comportementaux
+--
+-- ⚠️  Le SQL Editor utilise service_role et contourne RLS.
+--     Ces tests DOIVENT être effectués avec un vrai compte
+--     connecté via l'application ou via Postman avec le JWT.
+--
+-- Pour obtenir le JWT d'un compte :
+--   • Se connecter dans l'appli
+--   • DevTools > Application > Local Storage > sb-*-auth-token
+--   • Copier "access_token"
+--   Ou : Supabase Dashboard > Authentication > Users > … > Copy JWT
+-- ════════════════════════════════════════════════════════════
+
+/*
+══ PRÉPARATION : récupérer deux JWT ══════════════════════════
+
+JWT_AUTORISE  = JWT d'un parent avec acces_cours = true
+JWT_BLOQUE    = JWT d'un parent avec acces_cours = false
+JWT_ADMIN     = JWT d'un compte admin
+URL_BASE      = https://<project>.supabase.co
+ANON_KEY      = clé anon de votre projet Supabase
+
+Exemple curl générique (remplacer les placeholders) :
+  curl -s "<URL_BASE>/rest/v1/<table>?select=<colonnes>" \
+    -H "apikey: <ANON_KEY>" \
+    -H "Authorization: Bearer <JWT>"
+
+
+══ CAS 1 : Parent autorisé (acces_cours = true) ══════════════
+
+C1a. Accès aux horaires via la vue
+  GET /rest/v1/groupes_public?select=id,categorie,jour,horaire,ordre
+  -H "Authorization: Bearer <JWT_AUTORISE>"
+  → Attendu : tableau JSON avec les groupes (sans zoom_link)
+
+C1b. Accès aux Zoom links via groupe_acces
+  GET /rest/v1/groupe_acces?select=groupe_id,zoom_link,devoirs
+  -H "Authorization: Bearer <JWT_AUTORISE>"
+  → Attendu : 23 lignes avec zoom_link non null
+
+C1c. Accès aux documents d'un groupe
+  GET /rest/v1/groupe_documents?select=*&groupe_id=eq.<un_id>
+  -H "Authorization: Bearer <JWT_AUTORISE>"
+  → Attendu : documents du groupe retournés
+
+C1d. URL signée générée pour un document (via l'appli)
+  supabase.storage.from('groupe-docs').createSignedUrl('<chemin>', 3600)
+  → Attendu : signedUrl non null, fichier téléchargeable
+
+
+══ CAS 2 : Parent bloqué (acces_cours = false) ═══════════════
+
+C2a. Accès aux horaires via la vue
+  GET /rest/v1/groupes_public?select=id,categorie,jour,horaire,ordre
+  -H "Authorization: Bearer <JWT_BLOQUE>"
+  → Attendu : tableau JSON avec les groupes (accès public normal)
+
+C2b. groupe_acces bloqué par RLS
+  GET /rest/v1/groupe_acces?select=*
+  -H "Authorization: Bearer <JWT_BLOQUE>"
+  → Attendu : [] (tableau vide)
+
+C2c. groupe_documents bloqué par RLS
+  GET /rest/v1/groupe_documents?select=*
+  -H "Authorization: Bearer <JWT_BLOQUE>"
+  → Attendu : [] (tableau vide)
+
+C2d. createSignedUrl refusée (via l'appli)
+  supabase.storage.from('groupe-docs').createSignedUrl('<chemin>', 3600)
+  → Attendu : error non null, signedUrl null
+
+C2e. API REST directe sur groupe_documents
+  GET /rest/v1/groupe_documents?select=*
+  -H "Authorization: Bearer <JWT_BLOQUE>"
+  → Attendu : [] vide (RLS bloque)
+
+C2f. Bannière "Accès en attente" dans l'UI
+  → Attendu : visible sur l'onglet Annonces ET dans la zone documents
+
+C2g. ⭐ TEST CRITIQUE v8 — Accès direct à la TABLE groupes
+  GET /rest/v1/groupes?select=zoom_link
+  -H "apikey: <ANON_KEY>"
+  -H "Authorization: Bearer <JWT_BLOQUE>"
+  → Attendu : 403 Forbidden ou {"code":"42501","message":"permission denied for table groupes"}
+  → Raison : REVOKE SELECT ON groupes FROM authenticated en Phase B
+  → ⚠️  NE PAS se contenter du test sur groupes_public — tester la TABLE elle-même.
+
+C2h. ⭐ TEST CRITIQUE v8 — Accès à zoom_link via la vue
+  GET /rest/v1/groupes_public?select=zoom_link
+  -H "apikey: <ANON_KEY>"
+  -H "Authorization: Bearer <JWT_BLOQUE>"
+  → Attendu : 400 Bad Request ou erreur "column does not exist"
+  → Raison : zoom_link absent de la vue groupes_public
+
+C2i. ⭐ TEST CRITIQUE v8 — Tentative sans JWT (anon)
+  GET /rest/v1/groupes?select=zoom_link
+  -H "apikey: <ANON_KEY>"
+  (sans Authorization header)
+  → Attendu : 403 Forbidden
+  → Raison : REVOKE SELECT ON groupes FROM anon en Phase B
+
+
+══ CAS 3 : Admin ══════════════════════════════════════════════
+
+C3a. Admin voit tous les profils
+  GET /rest/v1/profiles?select=*
+  -H "Authorization: Bearer <JWT_ADMIN>"
+  → Attendu : tous les profils (politique profiles_admin_select)
+
+C3b. Admin peut modifier groupe_acces via l'appli (AdminDashboard)
+  → Champs Zoom + Devoirs visibles dans AdminDashboard > Groupes
+  → Sauvegarde fonctionne (upsert sur groupe_acces)
+
+C3c. Admin peut uploader dans groupe-docs (via l'appli)
+  supabase.storage.from('groupe-docs').upload('<chemin>', file)
+  → Attendu : succès (politique groupe_docs_admin_insert)
+
+C3d. Admin peut accéder à la TABLE groupes via service_role
+  → Via AdminDashboard côté serveur ou SQL Editor (service_role)
+  → Attendu : accès complet (service_role n'est pas soumis au REVOKE)
+
+C3e. ⭐ TEST v8 — Admin ne peut PAS accéder à groupes via son JWT (normal)
+  GET /rest/v1/groupes?select=*
+  -H "Authorization: Bearer <JWT_ADMIN>"
+  → Attendu : 403 Forbidden
+  → Raison : REVOKE s'applique aussi au rôle authenticated (dont l'admin fait partie)
+  → C'est intentionnel : l'admin utilise AdminDashboard côté serveur,
+    pas l'API REST publique pour lire groupes directement.
+  → Si AdminDashboard a besoin de lire groupes côté client, il doit aussi
+    utiliser groupes_public (il lit déjà les colonnes publiques uniquement).
+
+
+══ CAS 4 : Suspension et restauration ════════════════════════
+
+C4a. Mettre acces_cours = false sur un parent autorisé
+  → groupe_acces et groupe_documents retournent [] immédiatement
+
+C4b. URL signée déjà émise avant suspension
+  → Reste valide max 1h (non révocable — comportement JWT Supabase)
+
+C4c. Remettre acces_cours = true
+  → Accès restauré immédiatement
+
+
+══ CAS 5 : URL publiques Storage ═════════════════════════════
+
+C5a. URL publique directe (AVANT Phase C)
+  GET https://<project>.supabase.co/storage/v1/object/public/groupe-docs/<chemin>
+  → Attendu AVANT Phase C : fichier encore accessible (bucket public)
+  → Attendu APRÈS Phase C : 400 Bad Request ou 403 Forbidden
+
+C5b. URL signée après Phase C
+  supabase.storage.from('groupe-docs').createSignedUrl('<chemin>', 3600)
+  -H "Authorization: Bearer <JWT_AUTORISE>"
+  → Attendu : URL signée générée et fichier accessible
+
+
+══ CAS 6 : Documents publics ═════════════════════════════════
+
+C6a. Documents généraux accessibles à tout parent connecté
+  GET /rest/v1/documents?select=*
+  -H "Authorization: Bearer <JWT_BLOQUE>"
+  → Attendu : documents retournés (politique USING(true) intentionnelle)
+
+C6b. Fichiers statiques accessibles sans connexion
+  GET /calendrier-al-itqan-2026-2027.pdf
+  → Attendu : accessible (fichier Next.js /public/)
+
+  GET /reglement-interieur.pdf
+  → Attendu : accessible (fichier Next.js /public/)
+*/
+
+
+-- ════════════════════════════════════════════════════════════
+-- CHECKLIST GLOBALE v8
+-- ════════════════════════════════════════════════════════════
+-- Configuration :
+-- [ ] A1  : get_my_role() et get_my_acces_cours() DEFINER
+-- [ ] A3  : 2 politiques sur groupe_documents (sans USING true)
+-- [ ] A4  : 0 politique USING(true) sur groupe_documents
+-- [ ] A5  : 4 politiques Storage v8
+-- [ ] A6  : 3 politiques sur profiles
+-- [ ] A8  : 23 lignes dans groupe_acces
+-- [ ] A9  : parents_autorises inchangé, sans_acces = 0
+-- [ ] A11 : ⭐ anon + authenticated ABSENTS de role_table_grants pour groupes
+-- [ ] A12 : ⭐ zoom_link ABSENT de groupes_public
+-- [ ] A13 : anon=SELECT, authenticated=SELECT sur groupes_public
+-- [ ] A14 : zoom_manquant = 0, devoirs_manquant = 0
+-- [ ] B1  : trigger force acces_cours = false
+--
+-- Tests directs API (OBLIGATOIRES) :
+-- [ ] C2g : ⭐ /rest/v1/groupes?select=zoom_link → 403 avec JWT parent bloqué
+-- [ ] C2h : ⭐ /rest/v1/groupes_public?select=zoom_link → erreur colonne absente
+-- [ ] C2i : ⭐ /rest/v1/groupes?select=zoom_link sans JWT → 403
+-- [ ] C1a : /rest/v1/groupes_public → horaires visibles pour parent autorisé
+-- [ ] C1b : /rest/v1/groupe_acces → Zoom visible pour parent autorisé
+-- [ ] C2b : /rest/v1/groupe_acces → [] pour parent bloqué
+-- [ ] C2c : /rest/v1/groupe_documents → [] pour parent bloqué
+-- [ ] C2e : /rest/v1/groupe_documents → [] via appel API direct
+-- [ ] C3e : /rest/v1/groupes → 403 même pour l'admin (attendu, intentionnel)
+--
+-- Après Phase C :
+-- [ ] C5a : URL publique Storage → 400/403
+-- [ ] C5b : URL signée → fonctionne pour parent autorisé
+-- ════════════════════════════════════════════════════════════

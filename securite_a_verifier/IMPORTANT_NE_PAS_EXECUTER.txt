@@ -1,0 +1,7 @@
+Les migrations issues des versions précédentes sont conservées pour audit,
+renommées .txt afin d'éviter une exécution accidentelle. Elles ne sont PAS
+validées pour Supabase en production.
+
+La migration finale devra tenir compte des droits de la table groupes, des
+vues dépendantes, du bucket documents absent de l'inventaire, et des chemins
+de documents externes. Ne pas appliquer les scripts .txt.

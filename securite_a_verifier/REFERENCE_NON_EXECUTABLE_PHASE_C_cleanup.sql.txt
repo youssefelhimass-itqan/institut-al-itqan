@@ -1,0 +1,138 @@
+-- ============================================================
+-- PHASE C — Nettoyage final v8
+-- Institut Al-Itqan
+--
+-- ⚠️  PHASE C N'EST PAS DIFFÉRABLE — À exécuter DANS LA MÊME
+--     FENÊTRE DE DÉPLOIEMENT que la Phase B et le code Next.js.
+--     Tant que le bucket est PUBLIC, les fichiers du bucket
+--     groupe-docs sont accessibles par quiconque connaît le chemin.
+--
+-- ⚠️  IRRÉVERSIBLE pour la suppression des colonnes.
+--     Exécuter uniquement APRÈS :
+--       1. Phase B SQL vérifiée (BLOC A des TESTS — toutes les cases cochées)
+--       2. Code Next.js déployé et vérifié (BLOC C des TESTS)
+--       3. Parents autorisés confirmés OK dans l'appli
+--
+-- CE SCRIPT :
+--   1. Vérifie la cohérence groupe_acces vs groupes (garde-fou)
+--   2. Passe le bucket groupe-docs en PRIVÉ (prioritaire)
+--   3. Supprime zoom_link et devoirs de la table groupes
+--   4. Recrée groupes_public (maintenant identique à groupes — vue maintenue)
+--   5. Reaccorde les droits (GRANT) sur groupes_public après recreation
+--
+-- CORRECTIONS v8 vs v7 :
+--   ❌ v7 : ALTER VIEW ... ENABLE ROW LEVEL SECURITY → invalide en PostgreSQL
+--   ❌ v7 : CREATE POLICY ... ON <vue> → invalide en PostgreSQL
+--   ✅ v8 : DROP VIEW + ALTER TABLE + CREATE VIEW + GRANT (séquence valide)
+--
+-- RETOUR ARRIÈRE : voir ROLLBACK_PHASE_B.sql BLOC 5 pour restaurer les colonnes
+-- ============================================================
+
+
+-- ════════════════════════════════════════════════════════════
+-- VÉRIFICATIONS PRÉ-PHASE C (OBLIGATOIRES)
+-- ════════════════════════════════════════════════════════════
+
+-- V1. Cohérence groupe_acces vs groupes — GARDE-FOU PRINCIPAL
+SELECT
+  COUNT(*)                                                              AS total_groupes,
+  COUNT(ga.groupe_id)                                                   AS groupes_dans_acces,
+  COUNT(*) FILTER (WHERE g.zoom_link IS NOT DISTINCT FROM ga.zoom_link) AS zoom_coherent,
+  COUNT(*) FILTER (WHERE g.zoom_link IS NOT NULL AND ga.zoom_link IS NULL) AS zoom_manquant_dans_acces,
+  COUNT(*) FILTER (WHERE g.devoirs  IS NOT NULL AND ga.devoirs  IS NULL) AS devoirs_manquant_dans_acces
+FROM public.groupes g
+LEFT JOIN public.groupe_acces ga ON ga.groupe_id = g.id;
+-- Attendu :
+--   total_groupes = groupes_dans_acces
+--   zoom_manquant_dans_acces = 0
+--   devoirs_manquant_dans_acces = 0
+-- ⚠️  Si l'une de ces conditions échoue : ARRÊTER ICI.
+
+-- V2. Les politiques Phase B sont en place (groupe_documents protégé)
+SELECT policyname FROM pg_policies
+WHERE schemaname = 'public' AND tablename = 'groupe_documents'
+  AND qual = 'true';
+-- Attendu : 0 lignes (aucune politique USING(true))
+-- ⚠️  Si des lignes apparaissent : Phase B incomplète, arrêter ici.
+
+-- V3. REVOKE Phase B effectif (anon/authenticated sans accès direct à groupes)
+SELECT grantee FROM information_schema.role_table_grants
+WHERE table_schema = 'public' AND table_name = 'groupes'
+  AND grantee IN ('anon', 'authenticated');
+-- Attendu : 0 lignes
+-- ⚠️  Si des lignes apparaissent : Phase B incomplète, arrêter ici.
+
+-- V4. Vue groupes_public présente
+SELECT COUNT(*) FROM pg_views
+WHERE schemaname = 'public' AND viewname = 'groupes_public';
+-- Attendu : 1
+-- ⚠️  Si 0 : Phase B incomplète, arrêter ici.
+
+-- V5. Dépendances sur zoom_link et devoirs dans groupes
+-- (vérifier qu'aucun objet DB ne dépend de ces colonnes avant suppression)
+SELECT
+  dep.deptype,
+  obj.oid,
+  obj.relname AS dependent_object,
+  att.attname AS dependent_column
+FROM pg_depend dep
+JOIN pg_class obj    ON obj.oid = dep.refobjid
+JOIN pg_attribute att ON att.attrelid = dep.refobjid AND att.attnum = dep.refobjsubid
+WHERE obj.relname = 'groupes'
+  AND att.attname IN ('zoom_link', 'devoirs')
+  AND dep.deptype != 'i'; -- exclure les dépendances internes
+-- Attendu : 0 lignes (aucune dépendance externe sur ces colonnes)
+-- ⚠️  Si des lignes apparaissent : identifier et supprimer les dépendances d'abord.
+
+-- Garde-fous exécutables : ne pas se fier seulement aux SELECT affichés.
+DO $$
+DECLARE
+  total_g integer;
+  total_ga integer;
+  missing_zoom integer;
+  missing_devoirs integer;
+BEGIN
+  SELECT COUNT(*) INTO total_g FROM public.groupes;
+  SELECT COUNT(*) INTO total_ga FROM public.groupe_acces;
+  SELECT COUNT(*) INTO missing_zoom
+  FROM public.groupes g LEFT JOIN public.groupe_acces ga ON ga.groupe_id=g.id
+  WHERE ga.groupe_id IS NULL OR (g.zoom_link IS NOT NULL AND ga.zoom_link IS NULL);
+  SELECT COUNT(*) INTO missing_devoirs
+  FROM public.groupes g LEFT JOIN public.groupe_acces ga ON ga.groupe_id=g.id
+  WHERE g.devoirs IS NOT NULL AND ga.devoirs IS NULL;
+  IF total_g <> total_ga OR missing_zoom <> 0 OR missing_devoirs <> 0 THEN
+    RAISE EXCEPTION 'Phase C interrompue : copie des données incomplète';
+  END IF;
+  IF has_table_privilege('anon','public.groupes','SELECT')
+     OR has_table_privilege('authenticated','public.groupes','SELECT') THEN
+    RAISE EXCEPTION 'Phase C interrompue : SELECT direct sur groupes encore possible';
+  END IF;
+END $$;
+
+-- ════════════════════════════════════════════════════════════
+-- ÉTAPE 1 : Passer le bucket groupe-docs en PRIVÉ
+-- (action la plus urgente — ferme la fuite des URL publiques)
+-- ════════════════════════════════════════════════════════════
+
+UPDATE storage.buckets
+SET public = false
+WHERE id = 'groupe-docs';
+
+-- Vérification immédiate
+SELECT id, name, public AS est_public FROM storage.buckets WHERE id = 'groupe-docs';
+-- Attendu : est_public = false
+
+-- ⚠️  Si l'UPDATE échoue (droits insuffisants sur storage.buckets) :
+--     Action MANUELLE OBLIGATOIRE avant de continuer :
+--       Supabase Dashboard → Storage → groupe-docs → Settings
+--       → Désactiver "Public bucket" → Save
+--     Puis tester manuellement :
+--       GET https://<project>.supabase.co/storage/v1/object/public/groupe-docs/<chemin>
+--       → Attendu : 400 Bad Request ou 403 Forbidden
+
+
+-- STOP VOLONTAIRE : le bucket est désormais privé.
+-- La suppression irréversible de colonnes est reportée à une migration
+-- séparée après sauvegarde externe, vérification des dépendances et tests
+-- réels avec les trois rôles. Ne pas exécuter de DROP COLUMN ici.
+SELECT id, public AS est_public FROM storage.buckets WHERE id='groupe-docs';
