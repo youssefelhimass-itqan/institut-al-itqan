@@ -4,12 +4,36 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-// ─── Types (inchangés) ─────────────────────────────────────────────────────
-type Annonce  = { id: string; titre: string; contenu: string; priorite: string; created_at: string }
-type Horaire  = { id: string; cours: string; horaire: string; jour: string; niveau: string }
-type Document = { id: string; nom: string; storage_path: string; taille: string; created_at: string }
-type Groupe   = { id: string; categorie: string; jour: string; horaire: string; ordre: number }
-type GDoc     = { id: string; groupe_id: string; nom: string; storage_path: string; taille: string; type_doc: string; created_at: string }
+// ─── Types ─────────────────────────────────────────────────────────────────
+type Annonce    = { id: string; titre: string; contenu: string; priorite: string; created_at: string }
+type Horaire    = { id: string; cours: string; horaire: string; jour: string; niveau: string }
+type Document   = { id: string; nom: string; storage_path: string; taille: string; created_at: string }
+
+// ⚠️  SÉCURITÉ v8 — REVOKE/GRANT architecture :
+//
+//   Phase B exécute : REVOKE SELECT ON public.groupes FROM anon, authenticated
+//   Cela signifie que l'API REST /rest/v1/groupes retourne 403 pour TOUT utilisateur
+//   utilisant le rôle PostgREST "authenticated" — y compris les administrateurs.
+//
+//   Solution : remplacer .from('groupes') par .from('groupes_public').
+//   - groupes_public est GRANTED à anon et authenticated → accessible via API REST
+//   - groupes_public contient uniquement les colonnes publiques (id, categorie, jour,
+//     horaire, ordre) — ces colonnes sont précisément celles qu'AdminDashboard utilise
+//     pour le sélecteur de groupe et la liste des groupes
+//   - Les données sensibles (zoom_link, devoirs) sont déjà lues depuis groupe_acces
+//     (inchangé — loadGroupeAcces utilise .from('groupe_acces') qui a sa propre RLS)
+//
+//   Après Phase C (colonnes supprimées), groupes_public = groupes (même contenu).
+//   Ce changement est donc valide indéfiniment.
+
+// Groupe : uniquement les colonnes présentes dans la vue groupes_public
+// (id, categorie, jour, horaire, ordre — PAS zoom_link, PAS devoirs)
+type Groupe     = { id: string; categorie: string; jour: string; horaire: string; ordre: number }
+
+type GDoc       = { id: string; groupe_id: string; nom: string; storage_path: string; taille: string; type_doc: string; created_at: string }
+// groupe_acces : table séparée pour les données sensibles (zoom_link, devoirs)
+// Accessible uniquement aux admins et aux parents avec acces_cours = true.
+type GroupeAccesAdmin = { groupe_id: string; zoom_link: string | null; devoirs: string | null }
 
 type Props = {
   annoncesInit:  Annonce[]
@@ -33,9 +57,13 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
   const [annonces,  setAnnonces]  = useState<Annonce[]>(annoncesInit)
   const [horaires,  setHoraires]  = useState<Horaire[]>(horairesInit)
   const [documents, setDocuments] = useState<Document[]>(documentsInit)
-  const [groupes,   setGroupes]   = useState<Groupe[]>([])
-  const [groupeDocs,setGroupeDocs]= useState<Record<string, GDoc[]>>({})
-  const [selGroupe, setSelGroupe] = useState<string>('')
+  const [groupes,     setGroupes]     = useState<Groupe[]>([])
+  const [groupeAcces, setGroupeAcces] = useState<Record<string, GroupeAccesAdmin>>({})
+  const [groupeDocs,  setGroupeDocs]  = useState<Record<string, GDoc[]>>({})
+  const [selGroupe,   setSelGroupe]   = useState<string>('')
+  const [editZoom,    setEditZoom]    = useState<string>('')
+  const [editDevoirs, setEditDevoirs] = useState<string>('')
+  const [savingAcces, setSavingAcces] = useState<boolean>(false)
 
   const [newAnn,    setNewAnn]    = useState({ titre: '', contenu: '', priorite: 'normale' })
   const [newHor,    setNewHor]    = useState({ cours: '', horaire: '', jour: 'Samedi', niveau: '' })
@@ -53,12 +81,66 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
 
   useEffect(() => { if (tab === 'groupes') loadGroupes() }, [tab])
 
+  // ── loadGroupes : utilise groupes_public au lieu de groupes ──────────────
+  //
+  // AVANT (v7 et antérieur) :
+  //   await supabase.from('groupes').select('id,categorie,jour,horaire,ordre')
+  //   → Après Phase B (REVOKE SELECT sur groupes), retourne 403 pour le rôle
+  //     "authenticated" (dont l'admin fait partie via PostgREST).
+  //
+  // APRÈS (v8) :
+  //   await supabase.from('groupes_public').select('id,categorie,jour,horaire,ordre')
+  //   → groupes_public a un GRANT SELECT pour "authenticated" → fonctionne.
+  //   → zoom_link et devoirs ne sont pas dans la vue → utiliser groupe_acces
+  //     (déjà le cas dans loadGroupeAcces / saveGroupeAcces ci-dessous).
   const loadGroupes = async () => {
-    const { data } = await supabase.from('groupes').select('*').order('ordre')
+    const { data, error } = await supabase
+      .from('groupes_public')                   // ← v8 : vue sécurisée au lieu de la table
+      .select('id,categorie,jour,horaire,ordre')
+      .order('ordre')
+    if (error) console.error('[groupes_public admin] erreur:', error.message)
     if (data && data.length > 0) {
-      setGroupes(data); const first = data[0].id
-      setSelGroupe(prev => prev || first); await loadGroupeDocs(first)
+      setGroupes(data)
+      const first = data[0].id
+      setSelGroupe(prev => prev || first)
+      await loadGroupeDocs(first)
+      await loadGroupeAcces(first)
     }
+  }
+
+  // Charge les données sensibles (zoom_link, devoirs) depuis groupe_acces
+  // groupe_acces a sa propre RLS admin → non affecté par le REVOKE sur groupes
+  const loadGroupeAcces = async (gid: string) => {
+    const { data, error } = await supabase
+      .from('groupe_acces')
+      .select('groupe_id,zoom_link,devoirs')
+      .eq('groupe_id', gid)
+      .maybeSingle()
+    if (error) console.error('[groupe_acces] erreur:', error.message)
+    if (data) {
+      setGroupeAcces(prev => ({ ...prev, [gid]: data }))
+      setEditZoom(data.zoom_link ?? '')
+      setEditDevoirs(data.devoirs ?? '')
+    } else {
+      // Pas encore de ligne dans groupe_acces pour ce groupe
+      setEditZoom('')
+      setEditDevoirs('')
+    }
+  }
+
+  // Sauvegarde zoom_link et devoirs dans groupe_acces (upsert)
+  const saveGroupeAcces = async (gid: string) => {
+    setSavingAcces(true)
+    const { error } = await supabase
+      .from('groupe_acces')
+      .upsert({ groupe_id: gid, zoom_link: editZoom || null, devoirs: editDevoirs || null })
+    if (error) {
+      notify('❌ ' + error.message)
+    } else {
+      setGroupeAcces(prev => ({ ...prev, [gid]: { groupe_id: gid, zoom_link: editZoom || null, devoirs: editDevoirs || null } }))
+      notify('✅ Lien Zoom / devoirs enregistrés')
+    }
+    setSavingAcces(false)
   }
   const loadGroupeDocs = async (gid: string) => {
     const { data } = await supabase.from('groupe_documents').select('*')
@@ -66,7 +148,10 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
     setGroupeDocs(prev => ({ ...prev, [gid]: data ?? [] }))
   }
   const handleSelectGroupe = async (gid: string) => {
-    setSelGroupe(gid); if (!groupeDocs[gid]) await loadGroupeDocs(gid)
+    setSelGroupe(gid)
+    if (!groupeDocs[gid]) await loadGroupeDocs(gid)
+    // Toujours recharger groupe_acces pour avoir les valeurs à jour dans le formulaire
+    await loadGroupeAcces(gid)
   }
   const addAnnonce = async () => {
     if (!newAnn.titre.trim()) return; setSaving(true)
@@ -388,6 +473,45 @@ export default function AdminDashboard({ annoncesInit, horairesInit, documentsIn
                       </optgroup>
                     ))}
                   </select>
+                </div>
+
+                {/* ── Lien Zoom et devoirs ─────────────────────────────── */}
+                {/* Ces données sont stockées dans groupe_acces (table séparée protégée par RLS). */}
+                {/* Les parents avec acces_cours=false ne peuvent pas y accéder directement. */}
+                <div className="rounded-xl p-4 space-y-3"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(139,96,32,0.18)' }}>
+                  <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--gold)' }}>
+                    Lien Zoom &amp; Devoirs (réservés aux parents autorisés)
+                  </p>
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider block mb-1.5" style={{ color: 'var(--text-3)' }}>
+                      Lien Zoom
+                    </label>
+                    <input
+                      className="inp-premium"
+                      placeholder="https://zoom.us/j/..."
+                      value={editZoom}
+                      onChange={e => setEditZoom(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider block mb-1.5" style={{ color: 'var(--text-3)' }}>
+                      Devoirs / Rappels
+                    </label>
+                    <textarea
+                      className="inp-premium resize-none"
+                      rows={3}
+                      placeholder="Mémoriser la sourate…"
+                      value={editDevoirs}
+                      onChange={e => setEditDevoirs(e.target.value)}
+                    />
+                  </div>
+                  <button
+                    onClick={() => saveGroupeAcces(selGroupe)}
+                    disabled={savingAcces || !selGroupe}
+                    className="btn-primary w-full py-2.5 rounded-xl text-sm disabled:opacity-40">
+                    {savingAcces ? 'Enregistrement…' : '💾 Enregistrer Zoom + Devoirs'}
+                  </button>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
