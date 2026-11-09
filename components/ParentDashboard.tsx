@@ -252,6 +252,106 @@ const CarteAudio = ({
   )
 }
 
+// ─── Couverture livre arabe ────────────────────────────────────────────────
+const CouvertureLivreArabe = () => (
+  <svg viewBox="0 0 80 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="livre-bg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stopColor="#1565C0"/>
+        <stop offset="100%" stopColor="#0D47A1"/>
+      </linearGradient>
+      <linearGradient id="livre-spine" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stopColor="#0A3880"/>
+        <stop offset="100%" stopColor="#1565C0"/>
+      </linearGradient>
+    </defs>
+    {/* Tranche du livre */}
+    <rect x="0" y="2" width="8" height="106" rx="2" fill="url(#livre-spine)"/>
+    {/* Couverture */}
+    <rect x="6" y="0" width="74" height="110" rx="3" fill="url(#livre-bg)"/>
+    {/* Reflet */}
+    <rect x="6" y="0" width="74" height="110" rx="3" fill="white" opacity="0.04"/>
+    {/* Bordure dorée */}
+    <rect x="10" y="4" width="66" height="102" rx="2" fill="none" stroke="#B89B6A" strokeWidth="1.2"/>
+    {/* Titre arabe stylisé — lettres simplifiées en formes */}
+    <text x="43" y="38" textAnchor="middle" fontFamily="serif" fontSize="14" fontWeight="bold" fill="white" opacity="0.95">أتعلم</text>
+    <text x="43" y="58" textAnchor="middle" fontFamily="serif" fontSize="12" fontWeight="bold" fill="white" opacity="0.9">العربية</text>
+    {/* Niveau */}
+    <rect x="22" y="68" width="36" height="14" rx="3" fill="#B89B6A" opacity="0.9"/>
+    <text x="40" y="79" textAnchor="middle" fontFamily="sans-serif" fontSize="7" fill="white" fontWeight="bold">NIVEAU 2</text>
+    {/* Étoile décorative */}
+    <circle cx="40" cy="96" r="4" fill="none" stroke="#B89B6A" strokeWidth="0.8" opacity="0.6"/>
+    <circle cx="40" cy="96" r="1.5" fill="#B89B6A" opacity="0.6"/>
+  </svg>
+)
+
+// ─── Carte livre ───────────────────────────────────────────────────────────
+const CarteLivre = ({
+  gd,
+  pdfUrl,
+  onLoad,
+  loading,
+}: {
+  gd: GDoc
+  pdfUrl: string | null
+  onLoad: () => void
+  loading: boolean
+}) => (
+  <div className="rounded-2xl p-4 flex gap-4 items-start"
+    style={{
+      background: 'linear-gradient(135deg, rgba(21,101,192,0.08) 0%, rgba(184,155,106,0.08) 100%)',
+      border: '1.5px solid rgba(21,101,192,0.25)',
+    }}>
+    {/* Miniature couverture */}
+    <div className="shrink-0 rounded-xl overflow-hidden shadow-md" style={{ width: 64, height: 88 }}>
+      <CouvertureLivreArabe/>
+    </div>
+    {/* Contenu */}
+    <div className="flex-1 min-w-0 flex flex-col gap-2.5">
+      <div>
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full mb-1.5"
+          style={{ background: 'rgba(21,101,192,0.12)', color: '#1565C0' }}>
+          📖 Manuel scolaire
+        </span>
+        <p className="text-sm font-bold leading-snug" style={{ color: 'var(--text-1)' }}>
+          {gd.nom}
+        </p>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
+          144 pages · {gd.taille} · {fmtDate(gd.created_at)}
+        </p>
+      </div>
+      {pdfUrl ? (
+        <div className="flex gap-2 flex-wrap">
+          <a href={pdfUrl} target="_blank" rel="noopener noreferrer"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold"
+            style={{ background: '#1565C0', color: '#FFFFFF', minWidth: 120 }}>
+            <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/>
+            </svg>
+            Lire le livre
+          </a>
+          <a href={pdfUrl} download={gd.nom}
+            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold"
+            style={{ background: 'rgba(184,155,106,0.15)', color: '#8C6E44', border: '1px solid rgba(184,155,106,0.3)' }}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+          </a>
+        </div>
+      ) : (
+        <button onClick={onLoad} disabled={loading}
+          className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"
+          style={{ background: '#1565C0', color: '#FFFFFF', opacity: loading ? 0.6 : 1 }}>
+          {loading
+            ? <><span className="animate-spin inline-block">⟳</span> Chargement…</>
+            : <><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/></svg>Lire le livre</>
+          }
+        </button>
+      )}
+    </div>
+  </div>
+)
+
 const priorityStyle = (p: string) => {
   if (p === 'haute')   return { color: '#F87171', bg: 'rgba(248,113,113,0.12)', label: 'Urgent'    }
   if (p === 'moyenne') return { color: '#FBBF24', bg: 'rgba(251,191,36,0.12)',  label: 'Important' }
@@ -276,6 +376,8 @@ export default function ParentDashboard({ user, annonces, horaires, accesCours }
   const [copied,      setCopied]     = useState<boolean>(false)
   const [audioUrls,    setAudioUrls]   = useState<Record<string, string>>({})
   const [audioLoading, setAudioLoading]= useState<Record<string, boolean>>({})
+  const [livreUrls,    setLivreUrls]   = useState<Record<string, string>>({})
+  const [livreLoading, setLivreLoading]= useState<Record<string, boolean>>({})
 
   useEffect(() => {
     if (tab === 'classes') fetchGroupes()
@@ -398,6 +500,19 @@ export default function ParentDashboard({ user, annonces, horaires, accesCours }
       else console.warn('[audio] URL introuvable pour', gd.nom)
     } finally {
       setAudioLoading(prev => ({ ...prev, [gd.id]: false }))
+    }
+  }
+
+  const loadLivreUrl = async (gd: GDoc) => {
+    if (!accesCours) return
+    if (livreUrls[gd.id]) return
+    setLivreLoading(prev => ({ ...prev, [gd.id]: true }))
+    try {
+      const url = await resolveUrl(gd.storage_path, 'groupe-docs', gd.id)
+      if (url) setLivreUrls(prev => ({ ...prev, [gd.id]: url }))
+      else console.warn('[livre] URL introuvable pour', gd.nom)
+    } finally {
+      setLivreLoading(prev => ({ ...prev, [gd.id]: false }))
     }
   }
 
@@ -764,6 +879,14 @@ export default function ParentDashboard({ user, annonces, horaires, accesCours }
                                         audioUrl={audioUrls[gd.id] ?? null}
                                         onLoad={() => loadAudioUrl(gd)}
                                         loading={audioLoading[gd.id] ?? false}
+                                      />
+                                    ) : gd.type_doc === 'livre' ? (
+                                      <CarteLivre
+                                        key={gd.id}
+                                        gd={gd}
+                                        pdfUrl={livreUrls[gd.id] ?? null}
+                                        onLoad={() => loadLivreUrl(gd)}
+                                        loading={livreLoading[gd.id] ?? false}
                                       />
                                     ) : (
                                       <div key={gd.id}
