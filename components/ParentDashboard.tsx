@@ -56,7 +56,7 @@ const CLASSES_MENU = [
 ]
 
 const TYPE_ICON: Record<string, string> = {
-  devoir: '📝', cours: '📖', rappel: '🔔', document: '📄',
+  devoir: '📝', cours: '📖', rappel: '🔔', document: '📄', audio: '🎧',
 }
 
 const JOURS_ORDRE = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche']
@@ -135,6 +135,111 @@ const BanniereAccesBloque = () => (
 const fmtDate = (s: string) =>
   new Date(s).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 
+// ─── Illustration ablutions ────────────────────────────────────────────────
+const IllustrationAblutions = ({ variant = 1 }: { variant?: 1 | 2 }) => {
+  const bg1    = variant === 1 ? '#EBF4FD' : '#EDFAF3'
+  const bg2    = variant === 1 ? '#C6E2F8' : '#B8EDD4'
+  const accent = variant === 1 ? '#4FA8D6' : '#34B87A'
+  const accent2 = variant === 1 ? '#2680B5' : '#1D8C5A'
+  return (
+    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <radialGradient id={`bg-${variant}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={bg2}/>
+          <stop offset="100%" stopColor={bg1}/>
+        </radialGradient>
+        <linearGradient id={`water-${variant}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={accent} stopOpacity="0.9"/>
+          <stop offset="100%" stopColor={accent2} stopOpacity="0.6"/>
+        </linearGradient>
+      </defs>
+      <circle cx="60" cy="60" r="58" fill={`url(#bg-${variant})`}/>
+      <ellipse cx="60" cy="90" rx="30" ry="8" fill={accent} opacity="0.18"/>
+      <rect x="45" y="80" width="30" height="12" rx="4" fill={accent} opacity="0.35"/>
+      <rect x="55" y="60" width="10" height="22" rx="3" fill={accent2} opacity="0.5"/>
+      <ellipse cx="60" cy="62" rx="22" ry="8" fill={accent} opacity="0.3"/>
+      <ellipse cx="48" cy="50" rx="3" ry="4.5" fill={`url(#water-${variant})`}/>
+      <ellipse cx="60" cy="45" rx="3" ry="4.5" fill={`url(#water-${variant})`}/>
+      <ellipse cx="72" cy="50" rx="3" ry="4.5" fill={`url(#water-${variant})`}/>
+      <ellipse cx="54" cy="38" rx="2" ry="3" fill={accent} opacity="0.5"/>
+      <ellipse cx="66" cy="38" rx="2" ry="3" fill={accent} opacity="0.5"/>
+      <ellipse cx="44" cy="68" rx="10" ry="6" fill="#F5CBA7" transform="rotate(-20 44 68)"/>
+      <ellipse cx="76" cy="68" rx="10" ry="6" fill="#F5CBA7" transform="rotate(20 76 68)"/>
+      {variant === 1
+        ? <><circle cx="22" cy="28" r="2" fill={accent} opacity="0.5"/><circle cx="98" cy="35" r="1.5" fill={accent} opacity="0.4"/><circle cx="30" cy="88" r="1.5" fill={accent} opacity="0.3"/></>
+        : <><circle cx="20" cy="40" r="2" fill={accent} opacity="0.5"/><circle cx="100" cy="30" r="1.5" fill={accent} opacity="0.4"/><circle cx="92" cy="85" r="1.5" fill={accent} opacity="0.3"/></>
+      }
+    </svg>
+  )
+}
+
+// ─── Carte audio ───────────────────────────────────────────────────────────
+const CarteAudio = ({
+  gd,
+  audioUrl,
+  onLoad,
+  loading,
+}: {
+  gd: GDoc
+  audioUrl: string | null
+  onLoad: () => void
+  loading: boolean
+}) => {
+  const isPartie2   = gd.nom.includes('2') || gd.nom.toLowerCase().includes('partie 2')
+  const variant     = isPartie2 ? 2 : 1
+  const color       = variant === 1 ? '#4FA8D6' : '#34B87A'
+  const colorBg     = variant === 1 ? 'rgba(79,168,214,0.10)' : 'rgba(52,184,122,0.10)'
+  const colorBorder = variant === 1 ? 'rgba(79,168,214,0.30)' : 'rgba(52,184,122,0.30)'
+  return (
+    <div className="rounded-2xl p-4 flex flex-col gap-3"
+      style={{ background: colorBg, border: `1.5px solid ${colorBorder}` }}>
+      <div className="flex items-center gap-4">
+        <div className="shrink-0 rounded-2xl overflow-hidden" style={{ width: 88, height: 88 }}>
+          <IllustrationAblutions variant={variant}/>
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full mb-2"
+            style={{ background: colorBorder, color }}>
+            🎧 Leçon audio
+          </span>
+          <p className="text-sm font-bold leading-snug" style={{ color: 'var(--text-1)' }}>
+            {gd.nom}
+          </p>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-3)' }}>
+            {gd.taille} · {fmtDate(gd.created_at)}
+          </p>
+        </div>
+      </div>
+      {audioUrl ? (
+        <audio
+          controls
+          preload="none"
+          className="w-full"
+          style={{ accentColor: color, borderRadius: '12px' }}>
+          <source src={audioUrl} type="audio/mp4"/>
+          Votre navigateur ne supporte pas la lecture audio.
+        </audio>
+      ) : (
+        <button
+          onClick={onLoad}
+          disabled={loading}
+          className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all"
+          style={{
+            background: color,
+            color: '#FFFFFF',
+            opacity: loading ? 0.6 : 1,
+            boxShadow: `0 4px 14px ${colorBorder}`,
+          }}>
+          {loading
+            ? <><span className="animate-spin inline-block">⟳</span> Chargement…</>
+            : <><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Écouter</>
+          }
+        </button>
+      )}
+    </div>
+  )
+}
+
 const priorityStyle = (p: string) => {
   if (p === 'haute')   return { color: '#F87171', bg: 'rgba(248,113,113,0.12)', label: 'Urgent'    }
   if (p === 'moyenne') return { color: '#FBBF24', bg: 'rgba(251,191,36,0.12)',  label: 'Important' }
@@ -157,6 +262,8 @@ export default function ParentDashboard({ user, annonces, horaires, accesCours }
   const [downloading, setDownloading]= useState<string | null>(null)
   const [docUrls,     setDocUrls]    = useState<Record<string, string>>({})
   const [copied,      setCopied]     = useState<boolean>(false)
+  const [audioUrls,    setAudioUrls]   = useState<Record<string, string>>({})
+  const [audioLoading, setAudioLoading]= useState<Record<string, boolean>>({})
 
   useEffect(() => {
     if (tab === 'classes') fetchGroupes()
@@ -266,6 +373,19 @@ export default function ParentDashboard({ user, annonces, horaires, accesCours }
       }
     } finally {
       setDownloading(null)
+    }
+  }
+
+  const loadAudioUrl = async (gd: GDoc) => {
+    if (!accesCours) return
+    if (audioUrls[gd.id]) return
+    setAudioLoading(prev => ({ ...prev, [gd.id]: true }))
+    try {
+      const url = await resolveUrl(gd.storage_path, 'groupe-docs', gd.id)
+      if (url) setAudioUrls(prev => ({ ...prev, [gd.id]: url }))
+      else console.warn('[audio] URL introuvable pour', gd.nom)
+    } finally {
+      setAudioLoading(prev => ({ ...prev, [gd.id]: false }))
     }
   }
 
@@ -624,40 +744,50 @@ export default function ParentDashboard({ user, annonces, horaires, accesCours }
                                       Aucun document pour ce groupe.
                                     </p>
                                   )}
-                                  {(groupeDocs[g.id] ?? []).map(gd => (
-                                    <div key={gd.id}
-                                      className="flex items-center gap-4 p-4 rounded-xl"
-                                      style={{ background: '#F7F3EC' }}>
-                                      <span className="text-xl shrink-0">{TYPE_ICON[gd.type_doc] ?? '📄'}</span>
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-1)' }}>
-                                          {gd.nom}
-                                        </p>
-                                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
-                                          {gd.taille} · {fmtDate(gd.created_at)}
-                                        </p>
+                                  {(groupeDocs[g.id] ?? []).map(gd =>
+                                    gd.type_doc === 'audio' ? (
+                                      <CarteAudio
+                                        key={gd.id}
+                                        gd={gd}
+                                        audioUrl={audioUrls[gd.id] ?? null}
+                                        onLoad={() => loadAudioUrl(gd)}
+                                        loading={audioLoading[gd.id] ?? false}
+                                      />
+                                    ) : (
+                                      <div key={gd.id}
+                                        className="flex items-center gap-4 p-4 rounded-xl"
+                                        style={{ background: '#F7F3EC' }}>
+                                        <span className="text-xl shrink-0">{TYPE_ICON[gd.type_doc] ?? '📄'}</span>
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-1)' }}>
+                                            {gd.nom}
+                                          </p>
+                                          <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
+                                            {gd.taille} · {fmtDate(gd.created_at)}
+                                          </p>
+                                        </div>
+                                        {/* Lien caché déclenché programmatiquement après résolution URL */}
+                                        {docUrls[gd.id] && (
+                                          <a id={`dl-link-${gd.id}`}
+                                            href={docUrls[gd.id]}
+                                            target="_blank" rel="noopener noreferrer"
+                                            className="btn-primary text-xs px-4 py-2 rounded-xl text-center inline-block"
+                                            style={{ background: '#B89B6A', color: '#FFFFFF' }}>
+                                            ↓
+                                          </a>
+                                        )}
+                                        {!docUrls[gd.id] && (
+                                          <button
+                                            onClick={() => handleDownload(gd.storage_path, 'groupe-docs', gd.id, gd.nom)}
+                                            disabled={downloading === gd.id}
+                                            className="btn-primary text-xs px-4 py-2 rounded-xl disabled:opacity-40"
+                                            style={{ background: '#B89B6A', color: '#FFFFFF' }}>
+                                            {downloading === gd.id ? '…' : '↓'}
+                                          </button>
+                                        )}
                                       </div>
-                                      {/* Lien caché déclenché programmatiquement après résolution URL */}
-                                      {docUrls[gd.id] && (
-                                        <a id={`dl-link-${gd.id}`}
-                                          href={docUrls[gd.id]}
-                                          target="_blank" rel="noopener noreferrer"
-                                          className="btn-primary text-xs px-4 py-2 rounded-xl text-center inline-block"
-                                          style={{ background: '#B89B6A', color: '#FFFFFF' }}>
-                                          ↓
-                                        </a>
-                                      )}
-                                      {!docUrls[gd.id] && (
-                                        <button
-                                          onClick={() => handleDownload(gd.storage_path, 'groupe-docs', gd.id, gd.nom)}
-                                          disabled={downloading === gd.id}
-                                          className="btn-primary text-xs px-4 py-2 rounded-xl disabled:opacity-40"
-                                          style={{ background: '#B89B6A', color: '#FFFFFF' }}>
-                                          {downloading === gd.id ? '…' : '↓'}
-                                        </button>
-                                      )}
-                                    </div>
-                                  ))}
+                                    )
+                                  )}
                                 </>
                               )}
                             </div>
