@@ -77,6 +77,7 @@ const FORMULES = [
   
   { id: 'cours-tajwid',         titre: 'Cours de Tajwid',             sous: 'Adultes · Mixte',   emoji: 'book', desc: 'Perfectionnement de la récitation du Coran selon les règles du Tajwid.', couleur: '#B89B6A', bg: 'rgba(184,155,106,0.10)' },
   { id: 'cours-religion',       titre: 'Cours de religion',           sous: 'Enfants / Ados',    emoji: 'arch', desc: "Cours de religion pour enfants et adolescents — deux groupes d'âge distincts.", couleur: '#8C5A3C', bg: 'rgba(140,90,60,0.10)' },
+  { id: 'religion',             titre: 'Religion',                    sous: 'Enfants & Ados',    emoji: 'arch', desc: "Cours de religion islamique pour enfants et adolescents : apprentissage de l'islam, croyance, pratique religieuse, histoires des prophètes et comportement.", couleur: '#5A7A3C', bg: 'rgba(90,122,60,0.10)' },
 ]
 
 const CLASSES_MENU = [
@@ -142,20 +143,28 @@ const STRIPE_LINKS: Record<string, Record<number, { comptant: string; fois4: str
     4: { comptant: '', fois4: '' },
     5: { comptant: '', fois4: '' },
   },
+  'religion': {
+    1: { comptant: 'https://buy.stripe.com/5kQ8wPesM7VO0oK7wu3sI0H', fois4: 'https://buy.stripe.com/14A8wP98sekc0oK2ca3sI0I' },
+    2: { comptant: 'https://buy.stripe.com/5kQ8wPesM7VO0oK7wu3sI0H', fois4: 'https://buy.stripe.com/14A8wP98sekc0oK2ca3sI0I' },
+    3: { comptant: 'https://buy.stripe.com/5kQ8wPesM7VO0oK7wu3sI0H', fois4: 'https://buy.stripe.com/14A8wP98sekc0oK2ca3sI0I' },
+    4: { comptant: 'https://buy.stripe.com/5kQ8wPesM7VO0oK7wu3sI0H', fois4: 'https://buy.stripe.com/14A8wP98sekc0oK2ca3sI0I' },
+    5: { comptant: 'https://buy.stripe.com/5kQ8wPesM7VO0oK7wu3sI0H', fois4: 'https://buy.stripe.com/14A8wP98sekc0oK2ca3sI0I' },
+  },
 }
 
 const fmt = (n: number) =>
   n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
 
 // Classes sans sélection du nombre d'élèves (lien Stripe unique, choix sur Stripe)
-const FLAT_PRICE_CLASSES = ['sciences-islamiques']
+const FLAT_PRICE_CLASSES = ['sciences-islamiques', 'religion']
 // Classes sans paiement sur la plateforme (tarif communiqué directement)
 const NO_PAYMENT_CLASSES  = ['cours-tajwid', 'cours-religion']
 
 // Prix fixes par formule (écrasent le calcul dynamique BASE × n)
 // { comptant: total en une fois, fois4: mensualité × 4 }
 const PRIX_FIXES: Record<string, { comptant: number; fois4: number }> = {
-  'sciences-islamiques':           { comptant: 156, fois4: 39 },
+  'sciences-islamiques': { comptant: 156,  fois4: 39    },
+  'religion':            { comptant: 89,   fois4: 22.25 },
 }
 
 export default function InscriptionClient({ userEmail }: { userEmail: string }) {
@@ -601,7 +610,8 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
                     </div>
                   ))}
 
-                  {/* Détail par élève */}
+                  {/* Détail par élève — masqué pour les formules à quantité Stripe */}
+                  {formule !== 'religion' && (
                   <div className="space-y-2 py-2" style={{ borderBottom: '1px solid var(--border-soft)' }}>
                     <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--text-3)' }}>
                       Détail par élève
@@ -635,6 +645,16 @@ export default function InscriptionClient({ userEmail }: { userEmail: string }) 
                       )
                     })}
                   </div>
+                  )}
+
+                  {/* Indication quantité Stripe — uniquement pour Religion */}
+                  {formule === 'religion' && (
+                  <div className="py-3 px-4 rounded-xl" style={{ background: 'rgba(90,122,60,0.08)', border: '1px solid rgba(90,122,60,0.2)', borderBottom: '1px solid var(--border-soft)' }}>
+                    <p className="text-xs" style={{ color: '#3D6020' }}>
+                      🛒 Vous pourrez sélectionner le nombre d'enfants directement sur la page de paiement Stripe.
+                    </p>
+                  </div>
+                  )}
 
                   {/* Montant final */}
                   <div className="pt-3 flex items-center justify-between">
