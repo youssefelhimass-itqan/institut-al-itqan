@@ -192,11 +192,14 @@ export async function POST(req: NextRequest) {
   // Price IDs récurrents associés aux Payment Links "4 fois" des nouvelles classes.
   // À retrouver dans Stripe Dashboard → Payment Links → cliquer le lien → Price ID.
   // Remplacez ces valeurs si les Price IDs réels sont différents.
-  const PAYMENT_LINK_PRICE_IDS = new Set([
-    'price_1Tgv5YGc0wtxjNeQJBI3KIZP', // Sciences Islamiques — 4 fois (69 €/mois)
-    'price_1TgvGuGc0wtxjNeQ3NIHq0t2', // Arabe et Compréhension — 4 fois (69 €/mois)
-    'price_1TnmEpGc0wtxjNeQPEvh2BsL', // Sciences Islamiques seule — 4 fois (39 €/mois)
-  ])
+  
+const PAYMENT_LINK_PRICE_IDS = new Set([
+  'price_1Tgv5YGc0wtxjNeQJBI3KIZP', // Sciences Islamiques
+  'price_1TgvGuGc0wtxjNeQ3NIHq0t2', // Arabe et Compréhension
+  'price_1TnmEpGc0wtxjNeQPEvh2BsL', // Sciences Islamiques seule
+  'price_1UcYu0Gc0wtxjNeQWZYZFlDM', // Religion — Enfants & Ados (22,25 €/mois)
+])
+
 
   if (event.type === 'customer.subscription.created') {
     const sub    = event.data.object as Stripe.Subscription
