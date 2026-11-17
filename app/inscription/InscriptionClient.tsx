@@ -70,7 +70,7 @@ const IconShield = ({ color }: { color: string }) => (
 
 const FORMULES = [
   { id: 'coran',                titre: 'Coran',                    sous: 'Enfants & Adultes', emoji: 'book', desc: 'Mémorisation du Coran, tajwîd et suivi régulier en petits groupes.', couleur: '#C4365A', bg: 'rgba(196,54,90,0.10)' },
-  { id: 'arabe-religion',       titre: 'Arabe',                    sous: 'Enfants',           emoji: 'arch', desc: 'Arabe fondamental, compréhension religieuse et bases solides dès le plus jeune âge.', couleur: '#3A8C62', bg: 'rgba(58,140,98,0.10)' },
+  { id: 'arabe-religion',       titre: 'Arabe',                    sous: 'Enfants & Ados',           emoji: 'arch', desc: 'Arabe fondamental, compréhension religieuse et bases solides dès le plus jeune âge.', couleur: '#3A8C62', bg: 'rgba(58,140,98,0.10)' },
   { id: 'arabe-adultes',        titre: 'Arabe',                    sous: 'Adultes débutants', emoji: 'pen',  desc: 'Lecture, écriture et bases de la langue arabe — accompagnement adapté aux adultes.', couleur: '#8B6020', bg: 'rgba(139,96,32,0.10)' },
   { id: 'sciences-islamiques',  titre: 'Sciences Islamiques',      sous: 'Adultes · Mixte',   emoji: 'book', desc: 'Cours de sciences islamiques pour adultes, hommes et femmes. Approfondissement des fondements de la religion.', couleur: '#B89B6A', bg: 'rgba(184,155,106,0.10)' },
   
